@@ -26,3 +26,5 @@ node_modules/
 tmp/
 *.sublime-project
 *.sublime-workspace
+
+requirejs-build/
