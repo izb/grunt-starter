@@ -224,8 +224,8 @@ module.exports = function(grunt) {
             templates_prod: closureopts([path.join(tmp, 'templates/**/*.js')], 'public/js/templates/all.js')
         },
         lint: {
-            dev:  ['grunt.js', 'src/**/*.js', 'test/**/*.js'],
-            prod: ['grunt.js', 'src/**/*.js', 'test/**/*.js']
+            dev:  ['grunt.js', 'src/**/*.js', 'test/qunit/**/*.js', 'test/mocha/**/*.js'],
+            prod: ['grunt.js', 'src/**/*.js', 'test/qunit/**/*.js', 'test/mocha/**/*.js']
         },
         jshint: {
             dev:  (function() { return lintopts(true); }()), /* true for in-dev option */
@@ -234,10 +234,10 @@ module.exports = function(grunt) {
         clean: {
             tmp:  tmp,
             out: 'public'
+        },
+        qunit: {
+            files: ['test/qunit/**/*.html']
         }
-        // qunit: {
-        //     files: ['test/**/*.html']
-        // },
         // watch: {
         //     files: '<config:lint.files>',
         //     tasks: 'lint qunit'
@@ -327,8 +327,18 @@ module.exports = function(grunt) {
 
     });
 
+    /* Alias tasks */
+
+    grunt.registerTask('modules', 'requirejs copyifchanged:modules');
+    grunt.registerTask('css_dev', 'compass:dev csslint cssmin');
+    grunt.registerTask('css_prod', 'compass:prod csslint cssmin');
+    grunt.registerTask('statics', 'copy:images copy:pages');
+    grunt.registerTask('jsmin_dev', 'multiCompile:js_dev closureCompiler:main_helpers_dev closureCompiler:templates_dev');
+    grunt.registerTask('jsmin_prod', 'multiCompile:js_prod closureCompiler:main_helpers_prod closureCompiler:templates_prod');
+    grunt.registerTask('test', 'qunit');
+
     /* CLI tasks */
 
-    grunt.registerTask('default', 'lint:dev requirejs copyifchanged:modules handlebars:all multiCompile:js_dev closureCompiler:main_helpers_dev closureCompiler:templates_dev compass:prod csslint cssmin copy:images copy:pages');
-    grunt.registerTask('production', 'clean lint:prod requirejs copyifchanged:modules handlebars:all multiCompile:js_prod closureCompiler:main_helpers_prod closureCompiler:templates_prod compass:prod csslint cssmin copy:images copy:pages');
+    grunt.registerTask('default', 'lint:dev test modules handlebars:all jsmin_dev css_dev statics');
+    grunt.registerTask('production', 'clean lint:prod test modules handlebars:all jsmin_prod css_prod statics');
 };
