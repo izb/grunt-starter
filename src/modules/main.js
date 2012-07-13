@@ -2,9 +2,9 @@ require(["jquery", "underscore", "submod/main"], function($, _, submod) {
 
     /* Main entry point */
     return function main() {
-        console.log("jQuery version " + $.fn.jquery);
-        console.log("underscore version " + _.VERSION);
-        console.log("submod version: " + submod.version);
+        // console.log("jQuery version " + $.fn.jquery);
+        // console.log("underscore version " + _.VERSION);
+        // console.log("submod version: " + submod.version);
     };
 
 }, function (err) {
