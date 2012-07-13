@@ -1,0 +1,8 @@
+@import 'myimport.scss';
+
+$fg: #000;
+
+.myclass {
+    background-color: $col_bg;
+    color:$fg;
+}
