@@ -7,12 +7,11 @@ module.exports = function(grunt) {
     var fs = require('fs');
     var path = require('path');
     var exec = require('child_process').exec;
-    var tmp = 'tmp';
-    var outputDir = 'public';
 
-    /* Custom options */
+    /* Environmental options */
 
     var closureJar = 'bin/closure-compiler/compiler.jar';
+    var tmp = 'tmp';
 
     /* Input file options */
 
@@ -93,6 +92,7 @@ module.exports = function(grunt) {
         } else {
             return true;
         }
+        grunt.log.writeln("Skipped "+ins+" (Not modified)");
         return false;
     }
 
@@ -130,16 +130,23 @@ module.exports = function(grunt) {
     }
 
     grunt.registerInitTask('initDev', 'Initialise development build', function() {
+
         grunt.log.writeln("This is a development build");
-        outputDir = 'public.dev';
+
+        grunt.config('vars.out', 'public');
+
     });
 
     grunt.registerInitTask('initProd', 'Initialise production build', function() {
+
         grunt.log.writeln("This is a production build");
+
+        grunt.config('vars.out', 'public.dev');
+
     });
 
     grunt.registerInitTask('summarize', 'Summarize the build', function() {
-        grunt.log.writeln("Build output can be found in " + outputDir);
+        grunt.log.writeln("Build output can be found in " + grunt.config('vars.out'));
     });
 
     /* Project config */
@@ -175,12 +182,12 @@ module.exports = function(grunt) {
             images: {
                 srcDir: 'src/assets/images',
                 src: ['**/*.jpg','**/*.jpeg','**/*.png','**/*.gif'],
-                dest: path.join(outputDir, 'images')
+                dest: '<%= vars.out %>/images'
             },
             pages: {
                 srcDir: 'src/assets',
                 src: ['**/*.htm','**/*.html','**/*.php'],
-                dest: outputDir
+                dest: '<%= vars.out %>'
             }
         },
         handlebars: {
@@ -209,33 +216,57 @@ module.exports = function(grunt) {
         cssmin: {
             all: {
                 src: ["vendor/stylesheets/normalize.css", "tmp/**/*.css", "vendor/stylesheets/helpers.css"],
-                dest: path.join(outputDir, 'css/all.css')
+                dest: '<%= vars.out %>/css/all.css'
             }
         },
         multiCompile: {
             js_dev: {
-                task: 'closureCompiler',
                 /* Source is only the js that was output from r.js, inferred by the module list. Omit the main module as
                  * we will do that separately, linked with any helper js files we may have. */
                 src: (function(){ return modules.slice(1).map(function(name) { return path.join(tmp, 'modules', name + '.js'); }); }()),
                 srcDir: path.join(tmp, 'modules'),
-                maps: (function(){ return modules.slice(1).map(function(name) { return path.join(outputDir, 'js', name + '.map'); }); }()),
-                opts: closureopts('', path.join(outputDir, 'js'))
+                maps: (function(){ return modules.slice(1).map(function(name) { return path.join('<%= vars.out %>/js', name + '.map'); }); }()),
+                opts: closureopts('', '<%= vars.out %>/js')
             },
             js_prod: {
-                task: 'closureCompiler',
                 /* Source is only the js that was output from r.js, inferred by the module list. Omit the main module as
                  * we will do that separately, linked with any helper js files we may have. */
                 src: (function(){ return modules.slice(1).map(function(name) { return path.join(tmp, 'modules', name + '.js'); }); }()),
                 srcDir: path.join(tmp, 'modules'),
-                opts: closureopts('', path.join(outputDir, 'js'))
+                opts: closureopts('', '<%= vars.out %>/js')
             }
         },
-        closureCompiler: {
-            main_helpers_dev: closureopts(['vendor/js/console-helper.min.js', path.join(tmp, 'modules/main.js')], path.join(outputDir, 'js/main.js'), path.join(outputDir, 'js/main.map')),
-            main_helpers_prod: closureopts(['vendor/js/console-helper.min.js', path.join(tmp, 'modules/main.js')], path.join(outputDir, 'js/main.js')),
-            templates_dev: closureopts([path.join(tmp, 'templates/**/*.js')], path.join(outputDir, 'js/templates/all.js'), path.join(outputDir, 'js/templates/all.map')),
-            templates_prod: closureopts([path.join(tmp, 'templates/**/*.js')], path.join(outputDir, 'js/templates/all.js'))
+        templatize: {
+
+            /* templatize is a hack around grunt plugins that don't support templatized option values. */
+
+            main_helpers_dev: {
+                task: 'closureCompiler',
+                opts:closureopts(['vendor/js/console-helper.min.js', path.join(tmp, 'modules/main.js')], '<%= vars.out %>/js/main.js', '<%= vars.out %>/js/main.map'),
+                dest_param:'output_file',
+                srcs_param:'js'
+            },
+
+            main_helpers_prod: {
+                task: 'closureCompiler',
+                opts:closureopts(['vendor/js/console-helper.min.js', path.join(tmp, 'modules/main.js')], '<%= vars.out %>/js/main.js'),
+                dest_param:'output_file',
+                srcs_param:'js'
+            },
+
+            templates_dev: {
+                task: 'closureCompiler',
+                opts:closureopts([path.join(tmp, 'templates/**/*.js')], '<%= vars.out %>/js/templates/all.js', '<%= vars.out %>/js/templates/all.map'),
+                dest_param:'output_file',
+                srcs_param:'js'
+            },
+
+            templates_prod: {
+                task: 'closureCompiler',
+                opts:closureopts([path.join(tmp, 'templates/**/*.js')], '<%= vars.out %>/js/templates/all.js'),
+                dest_param:'output_file',
+                srcs_param:'js'
+            }
         },
         lint: {
             dev:  ['grunt.js', 'src/**/*.js', 'test/qunit/**/*.js', 'test/mocha/**/*.js'],
@@ -246,7 +277,7 @@ module.exports = function(grunt) {
             prod: (function() { return lintopts(false); }()) /* false for production (no console) */
         },
         clean: {
-            tmp:  tmp,
+            tmp: tmp,
             out: 'public',
             outdev: 'public.dev',
             sasscache: '.sass-cache'
@@ -262,11 +293,45 @@ module.exports = function(grunt) {
 
     /* Helper tasks */
 
-    /** Determines if a file has changed by comparing two different versions of it. */
+    grunt.registerMultiTask('templatize', 'Call another task, processing strings for templates in its options. Useful if a 3rd party task has forgotten to support templates.', function() {
+        var processObject = function(o) {
+            for(var p in o) {
+                if(o.hasOwnProperty(p)) {
+                    var v = o[p];
+                    var t = typeof(v);
+                    if (t === 'string') {
+                        o[p] = grunt.template.process(v);
+                    } else if(t === 'object') {
+                        o[p] = processObject(v);
+                    }
+                }
+            }
+            return o;
+        };
+
+        var done = this.async();
+
+        var opts = processObject(this.data.opts);
+
+        var dotask = true;
+        if (this.data.dest_param !== undefined) {
+            var out = opts[this.data.dest_param];
+            var ins = grunt.file.expandFiles(opts[this.data.srcs_param]);
+            dotask = shouldBuild(out, ins);
+        }
+
+        if(dotask) {
+            grunt.helper(this.data.task, opts, done);
+        } else {
+            done();
+        }
+    });
+
+    /** Copies files, only if the source is newer. */
     grunt.registerMultiTask('copyifchanged', 'Call a grunt task on a group of source files one at a time individually', function() {
-        var srcDir = this.data.srcDir;
+        var srcDir = grunt.template.process(this.data.srcDir);
         var files = grunt.file.expandFiles(path.join(srcDir, this.file.src));
-        var destDir = this.file.dest;
+        var destDir = grunt.template.process(this.file.dest);
         files.forEach(function(f) {
             var name = f.substr(srcDir.length);
             var to = path.join(destDir, name);
@@ -285,11 +350,16 @@ module.exports = function(grunt) {
         var compile = function(f, files, maps) {
             opts.js = f.replace(/\\/g, '/');
             opts.output_file = path.join(outdir, f.substr(leading)).replace(/\\/g, '/');
-
+            opts.output_file = grunt.template.process(opts.output_file);
             grunt.file.mkdir(path.dirname(opts.output_file));
 
+            if(!shouldBuild(opts.output_file, [opts.js])) {
+                done();
+                return;
+            }
+
             if (maps !== undefined) {
-                opts.options.create_source_map = maps[0];
+                opts.options.create_source_map = grunt.template.process(maps[0]);
                 opts.options.source_map_format = 'V3';
             }
 
@@ -338,7 +408,10 @@ module.exports = function(grunt) {
         var dest = this.file.dest;
 
         files.forEach(function(f) {
-            grunt.file.copy(f, path.join(dest, f.substr(srcDir.length)));
+            var out = path.join(dest, f.substr(srcDir.length));
+            if(shouldBuild(out, [f])) {
+                grunt.file.copy(f, out);
+            }
         });
 
     });
@@ -349,8 +422,8 @@ module.exports = function(grunt) {
     grunt.registerTask('css_dev', 'compass:dev csslint cssmin');
     grunt.registerTask('css_prod', 'compass:prod csslint cssmin');
     grunt.registerTask('statics', 'copy:images copy:pages');
-    grunt.registerTask('jsmin_dev', 'multiCompile:js_dev closureCompiler:main_helpers_dev closureCompiler:templates_dev');
-    grunt.registerTask('jsmin_prod', 'multiCompile:js_prod closureCompiler:main_helpers_prod closureCompiler:templates_prod');
+    grunt.registerTask('jsmin_dev', 'multiCompile:js_dev templatize:main_helpers_dev templatize:templates_dev');
+    grunt.registerTask('jsmin_prod', 'multiCompile:js_prod templatize:main_helpers_prod templatize:templates_prod');
     grunt.registerTask('test', 'qunit');
 
     /* CLI tasks */
