@@ -8,6 +8,7 @@ module.exports = function(grunt) {
     var path = require('path');
     var exec = require('child_process').exec;
     var tmp = 'tmp';
+    var outputDir = 'public';
 
     /* Custom options */
 
@@ -128,6 +129,19 @@ module.exports = function(grunt) {
         }
     }
 
+    grunt.registerInitTask('initDev', 'Initialise development build', function() {
+        grunt.log.writeln("This is a development build");
+        outputDir = 'public.dev';
+    });
+
+    grunt.registerInitTask('initProd', 'Initialise production build', function() {
+        grunt.log.writeln("This is a production build");
+    });
+
+    grunt.registerInitTask('summarize', 'Summarize the build', function() {
+        grunt.log.writeln("Build output can be found in " + outputDir);
+    });
+
     /* Project config */
 
     grunt.initConfig({
@@ -161,12 +175,12 @@ module.exports = function(grunt) {
             images: {
                 srcDir: 'src/assets/images',
                 src: ['**/*.jpg','**/*.jpeg','**/*.png','**/*.gif'],
-                dest: 'public/images'
+                dest: path.join(outputDir, 'images')
             },
             pages: {
                 srcDir: 'src/assets',
                 src: ['**/*.htm','**/*.html','**/*.php'],
-                dest: 'public'
+                dest: outputDir
             }
         },
         handlebars: {
@@ -195,7 +209,7 @@ module.exports = function(grunt) {
         cssmin: {
             all: {
                 src: ["vendor/stylesheets/normalize.css", "tmp/**/*.css", "vendor/stylesheets/helpers.css"],
-                dest: 'public/css/all.css'
+                dest: path.join(outputDir, 'css/all.css')
             }
         },
         multiCompile: {
@@ -205,8 +219,8 @@ module.exports = function(grunt) {
                  * we will do that separately, linked with any helper js files we may have. */
                 src: (function(){ return modules.slice(1).map(function(name) { return path.join(tmp, 'modules', name + '.js'); }); }()),
                 srcDir: path.join(tmp, 'modules'),
-                maps: (function(){ return modules.slice(1).map(function(name) { return path.join('public/js', name + '.map'); }); }()),
-                opts: closureopts('', 'public/js')
+                maps: (function(){ return modules.slice(1).map(function(name) { return path.join(outputDir, 'js', name + '.map'); }); }()),
+                opts: closureopts('', path.join(outputDir, 'js'))
             },
             js_prod: {
                 task: 'closureCompiler',
@@ -214,14 +228,14 @@ module.exports = function(grunt) {
                  * we will do that separately, linked with any helper js files we may have. */
                 src: (function(){ return modules.slice(1).map(function(name) { return path.join(tmp, 'modules', name + '.js'); }); }()),
                 srcDir: path.join(tmp, 'modules'),
-                opts: closureopts('', 'public/js')
+                opts: closureopts('', path.join(outputDir, 'js'))
             }
         },
         closureCompiler: {
-            main_helpers_dev: closureopts(['vendor/js/console-helper.min.js', path.join(tmp, 'modules/main.js')], 'public/js/main.js', 'public/js/main.map'),
-            main_helpers_prod: closureopts(['vendor/js/console-helper.min.js', path.join(tmp, 'modules/main.js')], 'public/js/main.js'),
-            templates_dev: closureopts([path.join(tmp, 'templates/**/*.js')], 'public/js/templates/all.js', 'public/js/templates/all.map'),
-            templates_prod: closureopts([path.join(tmp, 'templates/**/*.js')], 'public/js/templates/all.js')
+            main_helpers_dev: closureopts(['vendor/js/console-helper.min.js', path.join(tmp, 'modules/main.js')], path.join(outputDir, 'js/main.js'), path.join(outputDir, 'js/main.map')),
+            main_helpers_prod: closureopts(['vendor/js/console-helper.min.js', path.join(tmp, 'modules/main.js')], path.join(outputDir, 'js/main.js')),
+            templates_dev: closureopts([path.join(tmp, 'templates/**/*.js')], path.join(outputDir, 'js/templates/all.js'), path.join(outputDir, 'js/templates/all.map')),
+            templates_prod: closureopts([path.join(tmp, 'templates/**/*.js')], path.join(outputDir, 'js/templates/all.js'))
         },
         lint: {
             dev:  ['grunt.js', 'src/**/*.js', 'test/qunit/**/*.js', 'test/mocha/**/*.js'],
@@ -233,7 +247,9 @@ module.exports = function(grunt) {
         },
         clean: {
             tmp:  tmp,
-            out: 'public'
+            out: 'public',
+            outdev: 'public.dev',
+            sasscache: '.sass-cache'
         },
         qunit: {
             files: ['test/qunit/**/*.html']
@@ -339,6 +355,7 @@ module.exports = function(grunt) {
 
     /* CLI tasks */
 
-    grunt.registerTask('default', 'lint:dev test modules handlebars:all jsmin_dev css_dev statics');
-    grunt.registerTask('production', 'clean lint:prod test modules handlebars:all jsmin_prod css_prod statics');
+    grunt.registerTask('default', 'initDev lint:dev modules handlebars:all test jsmin_dev css_dev statics summarize');
+    grunt.registerTask('rebuild', 'clean default');
+    grunt.registerTask('production', 'initProd clean lint:prod modules handlebars:all test jsmin_prod css_prod statics summarize');
 };
