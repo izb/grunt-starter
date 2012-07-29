@@ -71,6 +71,7 @@ module.exports = function(grunt) {
 
     grunt.loadNpmTasks('grunt-css');
     grunt.loadNpmTasks('grunt-clean');
+    grunt.loadNpmTasks('grunt-mocha');
     grunt.loadNpmTasks('grunt-compass');
     grunt.loadNpmTasks('grunt-requirejs');
     grunt.loadNpmTasks('grunt-handlebars');
@@ -133,7 +134,7 @@ module.exports = function(grunt) {
 
         grunt.log.writeln("This is a development build");
 
-        grunt.config('vars.out', 'public');
+        grunt.config('vars.out', 'public.dev');
 
     });
 
@@ -141,7 +142,7 @@ module.exports = function(grunt) {
 
         grunt.log.writeln("This is a production build");
 
-        grunt.config('vars.out', 'public.dev');
+        grunt.config('vars.out', 'public');
 
     });
 
@@ -171,11 +172,22 @@ module.exports = function(grunt) {
             /* Bend the module array into a require.js-pleasing shape */
             modules: (function(){ return modules.map(function(name) { return {name:name}; }); }())
         },
+        concat: {
+            require: {
+                src: ['vendor/js/require.js', 'vendor/js/use.min.js'],
+                dest: '<%= vars.out %>/js/require.js'
+            }
+        },
         copyifchanged: {
             modules: {
                 srcDir: path.join(tmp, 'modules.fresh'),
-                src: '**/*.js',
+                src: ['**/*.js'],
                 dest: path.join(tmp, 'modules')
+            },
+            fallbacks: {
+                srcDir: 'vendor/js',
+                src: ['jquery-1.7.2.min.js', 'underscore-1.3.3.min.js', 'use.min.js'],
+                dest: '<%= vars.out %>/js'
             }
         },
         copy: {
@@ -284,6 +296,9 @@ module.exports = function(grunt) {
         },
         qunit: {
             files: ['test/qunit/**/*.html']
+        },
+        mocha: {
+            index: ['test/mocha/browser/**/*.html']
         }
         // watch: {
         //     files: '<config:lint.files>',
@@ -330,8 +345,9 @@ module.exports = function(grunt) {
     /** Copies files, only if the source is newer. */
     grunt.registerMultiTask('copyifchanged', 'Call a grunt task on a group of source files one at a time individually', function() {
         var srcDir = grunt.template.process(this.data.srcDir);
-        var files = grunt.file.expandFiles(path.join(srcDir, this.file.src));
+        var files = grunt.file.expandFiles(this.file.src.map(function(f) { return path.join(srcDir, f); }));
         var destDir = grunt.template.process(this.file.dest);
+
         files.forEach(function(f) {
             var name = f.substr(srcDir.length);
             var to = path.join(destDir, name);
@@ -418,13 +434,14 @@ module.exports = function(grunt) {
 
     /* Alias tasks */
 
-    grunt.registerTask('modules', 'requirejs copyifchanged:modules');
+    grunt.registerTask('modules', 'copyifchanged:fallbacks concat:require requirejs copyifchanged:modules');
     grunt.registerTask('css_dev', 'compass:dev csslint cssmin');
     grunt.registerTask('css_prod', 'compass:prod csslint cssmin');
     grunt.registerTask('statics', 'copy:images copy:pages');
     grunt.registerTask('jsmin_dev', 'multiCompile:js_dev templatize:main_helpers_dev templatize:templates_dev');
     grunt.registerTask('jsmin_prod', 'multiCompile:js_prod templatize:main_helpers_prod templatize:templates_prod');
-    grunt.registerTask('test', 'qunit');
+    //grunt.registerTask('test', 'qunit');
+    grunt.registerTask('test', 'mocha');
 
     /* CLI tasks */
 
