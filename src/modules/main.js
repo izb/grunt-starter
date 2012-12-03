@@ -1,5 +1,5 @@
-define(["use", "jquery", "use!underscore", "submod/main"],
-function(use,   $,        _,                submod) {
+define(["use", "jquery", "lodash", "submod/main"],
+function(use,   $,        _,        submod) {
 
     /* Main entry point */
     return {
@@ -11,7 +11,7 @@ function(use,   $,        _,                submod) {
     };
 
 }, function (err) {
-    var cdnFallbacks = { jquery: 'js/jquery-1.7.2.min.js', underscore: 'js/underscore-1.3.3.min.js' };
+    var cdnFallbacks = { jquery: 'js/jquery-1.8.3.min', lodash: 'js/lodash-0.10.0.min' };
     var id = err.requireModules && err.requireModules[0];
     if (cdnFallbacks.hasOwnProperty(id)) {
         requirejs.undef(id);

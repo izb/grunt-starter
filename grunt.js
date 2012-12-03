@@ -11,7 +11,7 @@ module.exports = function(grunt) {
     /* Environmental options */
 
     var closureJar = 'bin/closure-compiler/compiler.jar';
-    var tmp = 'tmp';
+    var tmp = 'generated';
 
     /* Input file options */
 
@@ -161,13 +161,13 @@ module.exports = function(grunt) {
                 baseUrl: '.',
                 paths: {
                     /* These CDN URLs have local fallbacks in src/modules/main.js */
-                    underscore: 'http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.3.3/underscore-min.js',
-                    jquery: 'https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js',
+                    lodash: 'http://cdnjs.cloudflare.com/ajax/libs/lodash.js/0.10.0/lodash.min.js',
+                    jquery: 'https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js',
                     use: '../../vendor/js/use.min',
-                    handlebars: '../../vendor/js/handlebars.runtime-1.0.0.beta.6'
+                    handlebars: '../../vendor/js/handlebars.runtime-1.0.0.rc.1',
+                    alltemplates: '../../generated/templates/all'
                 },
                 use: {
-                    underscore: { attach: '_' },
                     handlebars: { attach: 'Handlebars' }
                 },
                 pragmas: {
@@ -184,7 +184,7 @@ module.exports = function(grunt) {
                 /* TODO: Isolate the templates tmp root from everything else since
                  * the require plugin seems to copy all files in tmp, not just those
                  * it needs. */
-                appDir: 'tmp',
+                appDir: 'generated',
                 dir: path.join(tmp, 'modules.templates'),
                 baseUrl: '.',
                 pragmas: {
@@ -205,7 +205,7 @@ module.exports = function(grunt) {
             },
             fallbacks: {
                 srcDir: 'vendor/js',
-                src: ['jquery-1.7.2.min.js', 'underscore-1.3.3.min.js', 'require.js'],
+                src: ['jquery-1.8.3.min.js', 'lodash-0.10.0.min.js', 'require.js'],
                 dest: '<%= vars.out %>/js'
             },
             images: {
@@ -249,7 +249,7 @@ module.exports = function(grunt) {
         },
         cssmin: {
             all: {
-                src: ["vendor/stylesheets/normalize.css", "tmp/**/*.css", "vendor/stylesheets/helpers.css"],
+                src: ["vendor/stylesheets/normalize.css", path.join(tmp, '**/*.css'), "vendor/stylesheets/helpers.css"],
                 dest: '<%= vars.out %>/css/all.css'
             }
         },
@@ -453,13 +453,13 @@ module.exports = function(grunt) {
     grunt.registerTask('css_dev', 'compass:dev csslint cssmin');
     grunt.registerTask('css_prod', 'compass:prod csslint cssmin');
     grunt.registerTask('statics', 'copyifchanged:images copyifchanged:pages');
-    grunt.registerTask('jsmin_dev', 'multiCompile:js_dev templatize:main_helpers_dev templatize:templates_dev');
-    grunt.registerTask('jsmin_prod', 'multiCompile:js_prod templatize:main_helpers_prod templatize:templates_prod');
+    grunt.registerTask('jsmin_dev', 'templatize:templates_dev multiCompile:js_dev templatize:main_helpers_dev');
+    grunt.registerTask('jsmin_prod', 'templatize:templates_prod multiCompile:js_prod templatize:main_helpers_prod');
     grunt.registerTask('test', 'mocha');
 
     /* CLI tasks */
 
-    grunt.registerTask('default', 'initDev lint:dev templates modules test jsmin_dev css_dev statics summarize');
+    grunt.registerTask('default', 'initDev lint:dev templates modules jsmin_dev css_dev statics test summarize');
     grunt.registerTask('rebuild', 'clean default');
-    grunt.registerTask('production', 'initProd clean lint:prod templates modules test jsmin_prod css_prod statics summarize');
+    grunt.registerTask('production', 'initProd clean lint:prod templates modules jsmin_prod css_prod statics test summarize');
 };

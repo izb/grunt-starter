@@ -1,0 +1,10 @@
+
+main.js
+----------------
+D:/dev/github/grunt-starter/vendor/js/use.min.js
+submod/main.js
+main.js
+
+submod2/main.js
+----------------
+submod2/main.js
