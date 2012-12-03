@@ -5,19 +5,27 @@ function( $,        chai,   main) {
     var expect = chai.expect;
 
     describe('main', function() {
-        describe('#version', function() {
-            console.log("Running main#version");
+
+        describe('versions', function() {
+
             it('should use jQuery 1.7.2', function(){
                 expect($.fn.jquery).to.equal('1.7.2');
             });
-            it('should return "ok"', function(){
-                expect(main()).to.equal('ok');
+
+            it('should use submod v1', function(){
+                expect(main.submodVer).to.equal(1);
             });
+
         });
 
-        console.log($.fn.jquery);
-        console.log(expect);
-        console.log(main);
+        describe('#sayok', function() {
+
+            it('should return "ok"', function(){
+                expect(main.sayok()).to.equal('ok');
+            });
+
+        });
+
     });
 
 });

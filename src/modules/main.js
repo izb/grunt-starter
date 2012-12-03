@@ -1,12 +1,13 @@
-require(["jquery", "underscore", "submod/main"],
-function( $,        _,            submod) {
+define(["use", "jquery", "use!underscore", "submod/main"],
+function(use,   $,        _,                submod) {
 
     /* Main entry point */
-    return function main() {
-        console.log("jQuery version " + $.fn.jquery);
-        console.log("underscore version " + _.VERSION);
-        console.log("submod version: " + submod.version);
-        return "ok";
+    return {
+        submodVer: submod.version,
+
+        sayok: function() {
+            return "ok";
+        }
     };
 
 }, function (err) {

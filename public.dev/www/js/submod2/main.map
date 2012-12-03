@@ -1,6 +1,6 @@
 {
 "version":3,
-"file":"public.dev/js/submod2/main.js",
+"file":"public.dev/www/js/submod2/main.js",
 "lineCount":1,
 "mappings":"AACAA,MAAA,CAAO,cAAP,CAAsB,EAAtB,CAAyB,QAAQ,EAAG,CAEhC,MAAO,SACM,CADN,CAFyB,CAApC;",
 "sources":["tmp\\modules\\submod2\\main.js"],

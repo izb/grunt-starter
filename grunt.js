@@ -31,7 +31,8 @@ module.exports = function(grunt) {
                 warning_level: 'quiet',
                 summary_detail_level: 3
             },
-            output_file: output
+            output_file: output,
+            checkModified:true
         };
 
         if (mapfile) {
@@ -134,7 +135,7 @@ module.exports = function(grunt) {
 
         grunt.log.writeln("This is a development build");
 
-        grunt.config('vars.out', 'public.dev');
+        grunt.config('vars.out', 'public.dev/www');
 
     });
 
@@ -142,7 +143,7 @@ module.exports = function(grunt) {
 
         grunt.log.writeln("This is a production build");
 
-        grunt.config('vars.out', 'public');
+        grunt.config('vars.out', 'public/www');
 
     });
 
@@ -154,43 +155,59 @@ module.exports = function(grunt) {
 
     grunt.initConfig({
         requirejs: {
-            appDir: 'src/modules',
-            dir: path.join(tmp, 'modules.fresh'),
-            baseUrl: '.',
-            paths: {
-                /* These CDN URLs have local fallbacks in src/modules/main.js */
-                underscore: 'http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.3.3/underscore-min.js',
-                jquery: 'https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js'
+            modules: {
+                appDir: 'src/modules',
+                dir: path.join(tmp, 'modules.src'),
+                baseUrl: '.',
+                paths: {
+                    /* These CDN URLs have local fallbacks in src/modules/main.js */
+                    underscore: 'http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.3.3/underscore-min.js',
+                    jquery: 'https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js',
+                    use: '../../vendor/js/use.min',
+                    handlebars: '../../vendor/js/handlebars.runtime-1.0.0.beta.6'
+                },
+                use: {
+                    underscore: { attach: '_' },
+                    handlebars: { attach: 'Handlebars' }
+                },
+                pragmas: {
+                    doExclude: true
+                },
+                optimize: 'none',
+                skipModuleInsertion: false,
+                optimizeAllPluginResources: true,
+                findNestedDependencies: true,
+                /* Bend the module array into a require.js-pleasing shape */
+                modules: (function(){ return modules.map(function(name) { return {name:name}; }); }())
             },
-            pragmas: {
-                doExclude: true
-            },
-            optimize: 'none',
-            skipModuleInsertion: false,
-            optimizeAllPluginResources: true,
-            findNestedDependencies: true,
-            /* Bend the module array into a require.js-pleasing shape */
-            modules: (function(){ return modules.map(function(name) { return {name:name}; }); }())
-        },
-        concat: {
-            require: {
-                src: ['vendor/js/require.js', 'vendor/js/use.min.js'],
-                dest: '<%= vars.out %>/js/require.js'
+            templates: {
+                /* TODO: Isolate the templates tmp root from everything else since
+                 * the require plugin seems to copy all files in tmp, not just those
+                 * it needs. */
+                appDir: 'tmp',
+                dir: path.join(tmp, 'modules.templates'),
+                baseUrl: '.',
+                pragmas: {
+                    doExclude: true
+                },
+                optimize: 'none',
+                skipModuleInsertion: false,
+                optimizeAllPluginResources: true,
+                findNestedDependencies: true,
+                modules: [{name:'templates/all'}]
             }
         },
         copyifchanged: {
             modules: {
-                srcDir: path.join(tmp, 'modules.fresh'),
+                srcDir: path.join(tmp, 'modules.src'),
                 src: ['**/*.js'],
                 dest: path.join(tmp, 'modules')
             },
             fallbacks: {
                 srcDir: 'vendor/js',
-                src: ['jquery-1.7.2.min.js', 'underscore-1.3.3.min.js', 'use.min.js'],
+                src: ['jquery-1.7.2.min.js', 'underscore-1.3.3.min.js', 'require.js'],
                 dest: '<%= vars.out %>/js'
-            }
-        },
-        copy: {
+            },
             images: {
                 srcDir: 'src/assets/images',
                 src: ['**/*.jpg','**/*.jpeg','**/*.png','**/*.gif'],
@@ -200,6 +217,11 @@ module.exports = function(grunt) {
                 srcDir: 'src/assets',
                 src: ['**/*.htm','**/*.html','**/*.php'],
                 dest: '<%= vars.out %>'
+            },
+            scripts_vendor: {
+                srcDir: 'vendor/js',
+                src: ['require.js'],
+                dest: '<%= vars.out %>/js'
             }
         },
         handlebars: {
@@ -268,21 +290,21 @@ module.exports = function(grunt) {
 
             templates_dev: {
                 task: 'closureCompiler',
-                opts:closureopts([path.join(tmp, 'templates/**/*.js')], '<%= vars.out %>/js/templates/all.js', '<%= vars.out %>/js/templates/all.map'),
+                opts:closureopts([path.join(tmp, 'modules.templates/templates/**/*.js')], '<%= vars.out %>/js/templates/all.js', '<%= vars.out %>/js/templates/all.map'),
                 dest_param:'output_file',
                 srcs_param:'js'
             },
 
             templates_prod: {
                 task: 'closureCompiler',
-                opts:closureopts([path.join(tmp, 'templates/**/*.js')], '<%= vars.out %>/js/templates/all.js'),
+                opts:closureopts([path.join(tmp, 'modules.templates/templates/**/*.js')], '<%= vars.out %>/js/templates/all.js'),
                 dest_param:'output_file',
                 srcs_param:'js'
             }
         },
         lint: {
-            dev:  ['grunt.js', 'src/**/*.js', 'test/qunit/**/*.js', 'test/mocha/**/*.js'],
-            prod: ['grunt.js', 'src/**/*.js', 'test/qunit/**/*.js', 'test/mocha/**/*.js']
+            dev:  ['grunt.js', 'src/**/*.js', 'test/mocha/**/*.js'],
+            prod: ['grunt.js', 'src/**/*.js', 'test/mocha/**/*.js']
         },
         jshint: {
             dev:  (function() { return lintopts(true); }()), /* true for in-dev option */
@@ -293,9 +315,6 @@ module.exports = function(grunt) {
             out: 'public',
             outdev: 'public.dev',
             sasscache: '.sass-cache'
-        },
-        qunit: {
-            files: ['test/qunit/**/*.html']
         },
         mocha: {
             index: ['test/mocha/browser/**/*.html']
@@ -368,6 +387,7 @@ module.exports = function(grunt) {
             opts.output_file = path.join(outdir, f.substr(leading)).replace(/\\/g, '/');
             opts.output_file = grunt.template.process(opts.output_file);
             grunt.file.mkdir(path.dirname(opts.output_file));
+            opts.checkModified = true;
 
             if(!shouldBuild(opts.output_file, [opts.js])) {
                 done();
@@ -395,7 +415,10 @@ module.exports = function(grunt) {
 
     grunt.registerMultiTask('handlebars', 'Precompile Handlebars templates', function() {
         var done = this.async();
+
         var files = grunt.file.expandFiles(this.data.src);
+
+        grunt.file.mkdir(path.dirname(this.data.dest));
 
         if(!shouldBuild(this.data.dest, files)) {
             /* Skip (modified dates excuse us) */
@@ -404,16 +427,7 @@ module.exports = function(grunt) {
             return false;
         }
 
-        var destDir = path.dirname(this.data.dest);
-
-        try {
-            fs.mkdirSync(path.resolve(destDir));
-        } catch(e) {
-            /* Folder exists. Fine, ignore. */
-        }
-
         var cmd = 'handlebars ' + files + ' -f ' + this.data.dest;
-
         grunt.helper('executeCommand', cmd, done);
     });
 
@@ -434,18 +448,18 @@ module.exports = function(grunt) {
 
     /* Alias tasks */
 
-    grunt.registerTask('modules', 'copyifchanged:fallbacks concat:require requirejs copyifchanged:modules');
+    grunt.registerTask('modules', 'copyifchanged:fallbacks copyifchanged:scripts_vendor requirejs:modules copyifchanged:modules');
+    grunt.registerTask('templates', 'handlebars:all requirejs:templates');
     grunt.registerTask('css_dev', 'compass:dev csslint cssmin');
     grunt.registerTask('css_prod', 'compass:prod csslint cssmin');
-    grunt.registerTask('statics', 'copy:images copy:pages');
+    grunt.registerTask('statics', 'copyifchanged:images copyifchanged:pages');
     grunt.registerTask('jsmin_dev', 'multiCompile:js_dev templatize:main_helpers_dev templatize:templates_dev');
     grunt.registerTask('jsmin_prod', 'multiCompile:js_prod templatize:main_helpers_prod templatize:templates_prod');
-    //grunt.registerTask('test', 'qunit');
     grunt.registerTask('test', 'mocha');
 
     /* CLI tasks */
 
-    grunt.registerTask('default', 'initDev lint:dev modules handlebars:all test jsmin_dev css_dev statics summarize');
+    grunt.registerTask('default', 'initDev lint:dev templates modules test jsmin_dev css_dev statics summarize');
     grunt.registerTask('rebuild', 'clean default');
-    grunt.registerTask('production', 'initProd clean lint:prod modules handlebars:all test jsmin_prod css_prod statics summarize');
+    grunt.registerTask('production', 'initProd clean lint:prod templates modules test jsmin_prod css_prod statics summarize');
 };
