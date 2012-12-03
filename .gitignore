@@ -24,6 +24,7 @@ node_modules/
 
 # Folder for temporary files.
 tmp/
+generated/
 *.sublime-project
 *.sublime-workspace
 
