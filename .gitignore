@@ -28,3 +28,4 @@ tmp/
 *.sublime-workspace
 
 public/
+public.dev/
