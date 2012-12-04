@@ -23,6 +23,6 @@ define(["use", "jquery", "lodash", "submod/main", "use!handlebars"], function(us
         requirejs.config({ paths: newpaths });
         require([id], function () {});
     } else {
-        // TODO: Report error? No fallback, or other error.
+        throw "Failed to load JS dependency";
     }
 });

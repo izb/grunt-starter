@@ -322,14 +322,19 @@ module.exports = function(grunt) {
         var files = grunt.file.expandFiles(this.file.src);
         var _this = this;
 
-        if (files) {
-            files.map(function (f) {
-                var content = _this.data.wrapper[0] + grunt.task.directive(f, grunt.file.read) + _this.data.wrapper[1];
-                grunt.file.write(path.join(_this.file.dest, path.basename(f)), content);
-            });
+        if(shouldBuild(_this.file.dest, files)) {
+
+            if (files) {
+                files.map(function (f) {
+                    var content = _this.data.wrapper[0] + grunt.task.directive(f, grunt.file.read) + _this.data.wrapper[1];
+                    grunt.file.write(path.join(_this.file.dest, path.basename(f)), content);
+                });
+            }
+
+            return (this.errorCount===0);
         }
 
-        return (this.errorCount===0);
+        return true;
     });
 
     /* Helper tasks */
