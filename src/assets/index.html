@@ -15,9 +15,29 @@
 
     <link rel="stylesheet" href="css/all.css">
 
-    <script data-main="js/main" src="js/require.js"></script>
-    <script src="js/templates/all.js"></script> <!-- TODO: Load templates via require.js -->
-</head>
+
+    <script src="js/require.js"></script>
+    <script type="text/javascript">
+
+    require.config({
+        baseUrl: 'js/',
+        paths: {
+            jquery: 'http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min',
+            lodash: 'http://cdnjs.cloudflare.com/ajax/libs/lodash.js/0.10.0/lodash.min',
+            use: 'use.min',
+            handlebars: 'http://cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.rc.1/handlebars.min',
+            alltemplates: 'templates/all'
+        },
+        use: {
+            handlebars: { attach: 'Handlebars' }
+        }
+    });
+
+    require(['use','main'], function(main) {
+        console.log(main);
+    });
+
+    </script></head>
 <body>
 <header>
 

@@ -18,6 +18,8 @@ module.exports = function(grunt) {
     /* The main module is first. */
     var modules = ['main', 'submod2/main'];
 
+    var nonmodules = ['use'];
+
     /* Option generator functions */
 
     function closureopts(sources, output, mapfile) {
@@ -71,11 +73,11 @@ module.exports = function(grunt) {
     /* 3rd party tasks */
 
     grunt.loadNpmTasks('grunt-css');
+    grunt.loadNpmTasks('grunt-wrap');
     grunt.loadNpmTasks('grunt-clean');
     grunt.loadNpmTasks('grunt-mocha');
     grunt.loadNpmTasks('grunt-compass');
     grunt.loadNpmTasks('grunt-requirejs');
-    grunt.loadNpmTasks('grunt-handlebars');
     grunt.loadNpmTasks('grunt-closure-tools');
 
     /* Helper functions */
@@ -161,10 +163,10 @@ module.exports = function(grunt) {
                 baseUrl: '.',
                 paths: {
                     /* These CDN URLs have local fallbacks in src/modules/main.js */
-                    lodash: 'http://cdnjs.cloudflare.com/ajax/libs/lodash.js/0.10.0/lodash.min.js',
-                    jquery: 'https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js',
+                    lodash: 'http://cdnjs.cloudflare.com/ajax/libs/lodash.js/0.10.0/lodash.min',
+                    jquery: 'https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min',
                     use: '../../vendor/js/use.min',
-                    handlebars: '../../vendor/js/handlebars.runtime-1.0.0.rc.1',
+                    handlebars: 'http://cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.rc.1/handlebars.min',
                     alltemplates: '../../generated/templates/all'
                 },
                 use: {
@@ -178,23 +180,7 @@ module.exports = function(grunt) {
                 optimizeAllPluginResources: true,
                 findNestedDependencies: true,
                 /* Bend the module array into a require.js-pleasing shape */
-                modules: (function(){ return modules.map(function(name) { return {name:name}; }); }())
-            },
-            templates: {
-                /* TODO: Isolate the templates tmp root from everything else since
-                 * the require plugin seems to copy all files in tmp, not just those
-                 * it needs. */
-                appDir: 'generated',
-                dir: path.join(tmp, 'modules.templates'),
-                baseUrl: '.',
-                pragmas: {
-                    doExclude: true
-                },
-                optimize: 'none',
-                skipModuleInsertion: false,
-                optimizeAllPluginResources: true,
-                findNestedDependencies: true,
-                modules: [{name:'templates/all'}]
+                modules: (function(){ return modules.map(function(name) { return {name:name,excludeShallow:nonmodules}; }); }())
             }
         },
         copyifchanged: {
@@ -205,7 +191,7 @@ module.exports = function(grunt) {
             },
             fallbacks: {
                 srcDir: 'vendor/js',
-                src: ['jquery-1.8.3.min.js', 'lodash-0.10.0.min.js', 'require.js'],
+                src: ['jquery-1.8.3.min.js', 'lodash-0.10.0.min.js'],
                 dest: '<%= vars.out %>/js'
             },
             images: {
@@ -220,7 +206,7 @@ module.exports = function(grunt) {
             },
             scripts_vendor: {
                 srcDir: 'vendor/js',
-                src: ['require.js'],
+                src: ['require.js','use.min.js','handlebars.runtime-1.0.0.rc.1.min.js'],
                 dest: '<%= vars.out %>/js'
             }
         },
@@ -276,28 +262,28 @@ module.exports = function(grunt) {
 
             main_helpers_dev: {
                 task: 'closureCompiler',
-                opts:closureopts(['vendor/js/console-helper.min.js', path.join(tmp, 'modules/main.js')], '<%= vars.out %>/js/main.js', '<%= vars.out %>/js/main.map'),
+                opts:closureopts([path.join(tmp, 'modules/main.js')], '<%= vars.out %>/js/main.js', '<%= vars.out %>/js/main.map'),
                 dest_param:'output_file',
                 srcs_param:'js'
             },
 
             main_helpers_prod: {
                 task: 'closureCompiler',
-                opts:closureopts(['vendor/js/console-helper.min.js', path.join(tmp, 'modules/main.js')], '<%= vars.out %>/js/main.js'),
+                opts:closureopts([path.join(tmp, 'modules/main.js')], '<%= vars.out %>/js/main.js'),
                 dest_param:'output_file',
                 srcs_param:'js'
             },
 
             templates_dev: {
                 task: 'closureCompiler',
-                opts:closureopts([path.join(tmp, 'modules.templates/templates/**/*.js')], '<%= vars.out %>/js/templates/all.js', '<%= vars.out %>/js/templates/all.map'),
+                opts:closureopts([path.join(tmp, 'templates.amd/**/*.js')], '<%= vars.out %>/js/templates/all.js', '<%= vars.out %>/js/templates/all.map'),
                 dest_param:'output_file',
                 srcs_param:'js'
             },
 
             templates_prod: {
                 task: 'closureCompiler',
-                opts:closureopts([path.join(tmp, 'modules.templates/templates/**/*.js')], '<%= vars.out %>/js/templates/all.js'),
+                opts:closureopts([path.join(tmp, 'templates.amd/**/*.js')], '<%= vars.out %>/js/templates/all.js'),
                 dest_param:'output_file',
                 srcs_param:'js'
             }
@@ -318,11 +304,32 @@ module.exports = function(grunt) {
         },
         mocha: {
             index: ['test/mocha/browser/**/*.html']
+        },
+        amdwrap: {
+            templates: {
+                src: [path.join(tmp, 'templates/*.js')],
+                dest: path.join(tmp, 'templates.amd'),
+                wrapper: ['define([\'use!handlebars\'], function(Handlebars) {\n', '\n});']
+            }
         }
         // watch: {
         //     files: '<config:lint.files>',
         //     tasks: 'lint qunit'
         // },
+    });
+
+    grunt.registerMultiTask('amdwrap', 'Wrap files in defines', function() {
+        var files = grunt.file.expandFiles(this.file.src);
+        var _this = this;
+
+        if (files) {
+            files.map(function (f) {
+                var content = _this.data.wrapper[0] + grunt.task.directive(f, grunt.file.read) + _this.data.wrapper[1];
+                grunt.file.write(path.join(_this.file.dest, path.basename(f)), content);
+            });
+        }
+
+        return (this.errorCount===0);
     });
 
     /* Helper tasks */
@@ -414,21 +421,29 @@ module.exports = function(grunt) {
     });
 
     grunt.registerMultiTask('handlebars', 'Precompile Handlebars templates', function() {
+        var data = this.data;
         var done = this.async();
 
-        var files = grunt.file.expandFiles(this.data.src);
+        var files = grunt.file.expandFiles(data.src);
 
-        grunt.file.mkdir(path.dirname(this.data.dest));
+        grunt.file.mkdir(path.dirname(data.dest));
+        grunt.file.mkdir(path.dirname(data.dest)+".amd");
 
-        if(!shouldBuild(this.data.dest, files)) {
+        if(!shouldBuild(data.dest, files)) {
             /* Skip (modified dates excuse us) */
-            grunt.log.writeln("Skipping "+this.data.src+" (Not modified)");
+            grunt.log.writeln("Skipping "+data.src+" (Not modified)");
             done(true);
             return false;
         }
 
-        var cmd = 'handlebars ' + files + ' -f ' + this.data.dest;
-        grunt.helper('executeCommand', cmd, done);
+        var cmd = 'handlebars ' + files + ' -f ' + data.dest;
+        grunt.helper('executeCommand', cmd, function() {
+            // grunt.helper('wrap', {
+            //     src: [data.dest],
+            //     dest: path.dirname(data.dest)+".amd",
+            //     wrapper: ['define([\'handlebars\'], function (Handlebars) {\n', '\n});'] }, done);
+        done();
+        });
     });
 
     grunt.registerMultiTask( "copy", "Copy files from one folder to another", function() {
@@ -449,7 +464,7 @@ module.exports = function(grunt) {
     /* Alias tasks */
 
     grunt.registerTask('modules', 'copyifchanged:fallbacks copyifchanged:scripts_vendor requirejs:modules copyifchanged:modules');
-    grunt.registerTask('templates', 'handlebars:all requirejs:templates');
+    grunt.registerTask('templates', 'handlebars:all amdwrap:templates');
     grunt.registerTask('css_dev', 'compass:dev csslint cssmin');
     grunt.registerTask('css_prod', 'compass:prod csslint cssmin');
     grunt.registerTask('statics', 'copyifchanged:images copyifchanged:pages');

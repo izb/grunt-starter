@@ -1,5 +1,4 @@
-define(["use", "jquery", "lodash", "submod/main"],
-function(use,   $,        _,        submod) {
+define(["use", "jquery", "lodash", "submod/main", "use!handlebars"], function(use, $, _, submod) {
 
     /* Main entry point */
     return {
@@ -11,7 +10,11 @@ function(use,   $,        _,        submod) {
     };
 
 }, function (err) {
-    var cdnFallbacks = { jquery: 'js/jquery-1.8.3.min', lodash: 'js/lodash-0.10.0.min' };
+    var cdnFallbacks = {
+        jquery: 'js/jquery-1.8.3.min',
+        lodash: 'js/lodash-0.10.0.min',
+        handlebars: 'js/handlebars.runtime-1.0.0.rc.1.min'
+    };
     var id = err.requireModules && err.requireModules[0];
     if (cdnFallbacks.hasOwnProperty(id)) {
         requirejs.undef(id);

@@ -32,7 +32,7 @@
         "grunt-closure-tools": "~0.6.1",
         "grunt-clean": "~0.3.0",
         "grunt-mocha": "~0.1.2",
-        "grunt-handlebars": "~0.0.4",
+        "grunt-wrap": "~0.1.1",
         "chai": "1.1.0"
     },
     "devDependencies": {
