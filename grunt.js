@@ -16,9 +16,9 @@ module.exports = function(grunt) {
     /* Input file options */
 
     /* The main module is first. */
-    var modules = ['main', 'submod2/main'];
+    var modules = ['main'];
 
-    var nonmodules = ['use'];
+    var nonmodules = ['use', 'use!handlebars'];
 
     /* Option generator functions */
 
@@ -28,7 +28,7 @@ module.exports = function(grunt) {
             closureCompiler: closureJar,
             js: sources,
             options: {
-                compilation_level: 'ADVANCED_OPTIMIZATIONS',
+                compilation_level: 'SIMPLE_OPTIMIZATIONS',
                 externs: ['vendor/js/require.js'],
                 warning_level: 'quiet',
                 summary_detail_level: 3
@@ -167,7 +167,7 @@ module.exports = function(grunt) {
                     jquery: 'https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min',
                     use: '../../vendor/js/use.min',
                     handlebars: 'http://cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.rc.1/handlebars.min',
-                    alltemplates: '../../generated/templates/all'
+                    alltemplates: '../../generated/templates.amd/all'
                 },
                 use: {
                     handlebars: { attach: 'Handlebars' }
@@ -185,6 +185,7 @@ module.exports = function(grunt) {
         },
         copyifchanged: {
             modules: {
+                /* r.js overwrites files regardless, so we cache the output in modules to preserve the precious modified stamps */
                 srcDir: path.join(tmp, 'modules.src'),
                 src: ['**/*.js'],
                 dest: path.join(tmp, 'modules')
@@ -322,16 +323,15 @@ module.exports = function(grunt) {
         var files = grunt.file.expandFiles(this.file.src);
         var _this = this;
 
-        if(shouldBuild(_this.file.dest, files)) {
-
-            if (files) {
-                files.map(function (f) {
+        if (files) {
+            files.map(function (f) {
+                var out = path.join(_this.file.dest, path.basename(f));
+                if(shouldBuild(out, files)) {
                     var content = _this.data.wrapper[0] + grunt.task.directive(f, grunt.file.read) + _this.data.wrapper[1];
-                    grunt.file.write(path.join(_this.file.dest, path.basename(f)), content);
-                });
-            }
-
-            return (this.errorCount===0);
+                    grunt.file.write(out, content);
+                    /* TODO: How to determine if there's an error? We should return false if there is. */
+                }
+            });
         }
 
         return true;
@@ -422,6 +422,8 @@ module.exports = function(grunt) {
 
         if(files.length > 0) {
             compile(files[0], files.slice(1), this.data.maps);
+        } else {
+            done();
         }
     });
 
@@ -442,13 +444,7 @@ module.exports = function(grunt) {
         }
 
         var cmd = 'handlebars ' + files + ' -f ' + data.dest;
-        grunt.helper('executeCommand', cmd, function() {
-            // grunt.helper('wrap', {
-            //     src: [data.dest],
-            //     dest: path.dirname(data.dest)+".amd",
-            //     wrapper: ['define([\'handlebars\'], function (Handlebars) {\n', '\n});'] }, done);
-        done();
-        });
+        grunt.helper('executeCommand', cmd, done);
     });
 
     grunt.registerMultiTask( "copy", "Copy files from one folder to another", function() {

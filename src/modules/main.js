@@ -1,13 +1,7 @@
-define(["use", "jquery", "lodash", "submod/main", "use!handlebars"], function(use, $, _, submod) {
+define(["ui/main"], function(UI) {
 
     /* Main entry point */
-    return {
-        submodVer: submod.version,
-
-        sayok: function() {
-            return "ok";
-        }
-    };
+    return function() {new UI().renderData();};
 
 }, function (err) {
     var cdnFallbacks = {
