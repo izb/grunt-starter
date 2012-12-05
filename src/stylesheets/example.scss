@@ -22,4 +22,5 @@ $fg: #055;
   @include buttons-sprite(bullet);
   cursor: pointer;
   display: inline-block;
+  border:0;
 }
