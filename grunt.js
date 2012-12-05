@@ -20,8 +20,8 @@ module.exports = function(grunt) {
     var nonmodules = ['use', 'use!handlebars', 'tmplPersons'];
 
     /* Option generator functions */
-    var closureopts = require('./tasks/closureopts');
-    var lintopts = require('./tasks/lintopts');
+    var closureopts = require('./tasks/lib/closureopts');
+    var lintopts = require('./tasks/lib/lintopts');
 
     /* 3rd party tasks */
 
@@ -34,10 +34,12 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-text-replace');
     grunt.loadNpmTasks('grunt-closure-tools');
 
+    grunt.loadTasks('tasks');
+
     /* Helper functions */
 
-    var shouldBuild = require('./tasks/shouldBuild');
-    var copyIfFilesDiffer = require('./tasks/copyIfFilesDiffer');
+    var shouldBuild = require('./tasks/lib/shouldBuild');
+    var copyIfFilesDiffer = require('./tasks/lib/copyIfFilesDiffer');
 
     grunt.registerInitTask('initDev', 'Initialise development build', function() {
 
@@ -249,186 +251,6 @@ module.exports = function(grunt) {
              files: ['src/**/*','test/**/*','templates/**/*'],
              tasks: 'default'
         }
-    });
-
-    grunt.registerMultiTask('amdwrap', 'Wrap files in defines', function() {
-        var files = grunt.file.expandFiles(this.file.src);
-        var _this = this;
-
-        if (files) {
-            files.map(function (f) {
-                var out = path.join(_this.file.dest, path.basename(f));
-                if(shouldBuild(grunt, out, files)) {
-                    var content = _this.data.wrapper[0] + grunt.task.directive(f, grunt.file.read) + _this.data.wrapper[1];
-                    grunt.file.write(out, content);
-                    /* TODO: How to determine if there's an error? We should return false if there is. */
-                }
-            });
-        }
-
-        return true;
-    });
-
-    /* Helper tasks */
-
-    grunt.registerMultiTask('templatize', 'Call another task, processing strings for templates in its options. Useful if a 3rd party task has forgotten to support templates.', function() {
-        var processObject = function(o) {
-            for(var p in o) {
-                if(o.hasOwnProperty(p)) {
-                    var v = o[p];
-                    var t = typeof(v);
-                    if (t === 'string') {
-                        o[p] = grunt.template.process(v);
-                    } else if(t === 'object') {
-                        o[p] = processObject(v);
-                    }
-                }
-            }
-            return o;
-        };
-
-        var done = this.async();
-
-        var opts = processObject(this.data.opts);
-
-        var dotask = true;
-        if (this.data.dest_param !== undefined) {
-            var out = opts[this.data.dest_param];
-            var ins = grunt.file.expandFiles(opts[this.data.srcs_param]);
-            dotask = shouldBuild(grunt, out, ins);
-        }
-
-        if(dotask) {
-            grunt.helper(this.data.task, opts, done);
-        } else {
-            done();
-        }
-    });
-
-    /** Copies files, only if the source is newer. */
-    grunt.registerMultiTask('copyifchanged', 'Call a grunt task on a group of source files one at a time individually', function() {
-        var srcDir = grunt.template.process(this.data.srcDir);
-        var files = grunt.file.expandFiles(this.file.src.map(function(f) { return path.join(srcDir, f); }));
-        var destDir = grunt.template.process(this.file.dest);
-
-        files.forEach(function(f) {
-            var name = f.substr(srcDir.length);
-            var to = path.join(destDir, name);
-            copyIfFilesDiffer(grunt, f, to);
-        });
-    });
-
-    /** Like closureCompiler, but minifies source files individually without concat (require.js has already concatted enough) */
-    grunt.registerMultiTask('multiCompile', 'Call a grunt task on a group of source files one at a time individually', function() {
-        var files = grunt.file.expandFiles(this.data.src);
-        var opts = this.data.opts;
-        var outdir = opts.output_file;
-        var leading = this.data.srcDir.length;
-        var done = this.async();
-
-        var compile = function(f, files, maps) {
-            opts.js = f.replace(/\\/g, '/');
-            opts.output_file = path.join(outdir, f.substr(leading)).replace(/\\/g, '/');
-            opts.output_file = grunt.template.process(opts.output_file);
-            grunt.file.mkdir(path.dirname(opts.output_file));
-            opts.checkModified = true;
-
-            if(!shouldBuild(grunt, opts.output_file, [opts.js])) {
-                compile(files[0], files.slice(1), maps===undefined?maps:maps.slice(1));
-                return;
-            }
-
-            if (maps !== undefined) {
-                opts.options.create_source_map = grunt.template.process(maps[0]);
-                opts.options.source_map_format = 'V3';
-            }
-
-            if (files.length>0) {
-                grunt.helper('closureCompiler', opts, function() {
-                    compile(files[0], files.slice(1), maps===undefined?maps:maps.slice(1));
-                });
-            } else {
-                grunt.helper('closureCompiler', opts, done);
-            }
-        };
-
-        if(files.length > 0) {
-            compile(files[0], files.slice(1), this.data.maps);
-        } else {
-            done();
-        }
-    });
-
-
-    grunt.registerMultiTask('handlebars-xx', 'Precompile Handlebars templates', function() {
-        var data = this.data;
-        var done = this.async();
-
-        var files = grunt.file.expandFiles(data.src);
-
-        grunt.file.mkdir(path.dirname(data.dest));
-        grunt.file.mkdir(path.dirname(data.dest)+".amd");
-
-        var precompile = function(f, files) {
-            console.log(f, files, data.dest);
-            if(!shouldBuild(grunt, data.dest, f)) {
-                /* Skip (modified dates excuse us) */
-                precompile(files[0], files.slice(1));
-                return;
-            }
-
-            var cmd = 'handlebars ' + f + ' -f ' + data.dest;
-            if (files.length>0) {
-                grunt.helper('executeCommand', cmd, function() {
-                    precompile(files[0], files.slice(1));
-                });
-            } else {
-                grunt.helper('executeCommand', cmd, done);
-            }
-        };
-
-
-
-        if(files.length > 0) {
-            precompile(files[0], files.slice(1));
-        } else {
-            done();
-        }
-    });
-
-    grunt.registerMultiTask('handlebars', 'Precompile Handlebars templates', function() {
-        var data = this.data;
-        var done = this.async();
-
-        var files = grunt.file.expandFiles(path.join(data.src, "*.handlebars"));
-
-        grunt.file.mkdir(path.dirname(data.dest));
-        grunt.file.mkdir(path.dirname(data.dest)+".amd");
-
-        if(!shouldBuild(grunt, data.dest, files)) {
-            /* Skip (modified dates excuse us) */
-            grunt.log.writeln("Skipping "+data.src+" (Not modified)");
-            done(true);
-            return false;
-        }
-
-        var cmd = 'handlebars ' + data.src + ' -f ' + data.dest;
-        grunt.helper('executeCommand', cmd, done);
-    });
-
-    grunt.registerMultiTask( "copy", "Copy files from one folder to another", function() {
-
-        var srcDir = this.data.srcDir;
-        var files = grunt.file.expandFiles(this.file.src.map(function(f) { return path.join(srcDir, f); }));
-        var dest = this.file.dest;
-
-        files.forEach(function(f) {
-            var out = path.join(dest, f.substr(srcDir.length));
-            if(shouldBuild(grunt, out, [f])) {
-                grunt.file.copy(f, out);
-            }
-        });
-
     });
 
     /* Alias tasks */

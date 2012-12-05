@@ -1,4 +1,4 @@
-/*global module:false */
+/*global require:true*/
 module.exports = function copyIfFilesDiffer(grunt, from, to) {
 
     'use strict';
