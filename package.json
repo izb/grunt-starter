@@ -5,8 +5,8 @@
     },
     "contributors": [],
     "name": "grunt-starter",
-    "description": "A very basic project skeleton using grunt as a builder",
-    "version": "0.0.1",
+    "description": "A website project skeleton using grunt as a builder",
+    "version": "0.1.0",
     "homepage": "http://github.com/izb/grunt-starter",
     "repository": {
         "type": "git",
@@ -16,7 +16,7 @@
         "url": "https://github.com/izb/grunt-starter/issues"
     },
     "engines": {
-        "node": "~0.8.2"
+        "node": "~0.8.15"
     },
     "scripts": {
         "test": "grunt test"
@@ -38,5 +38,5 @@
     },
     "devDependencies": {
     },
-    "keywords": ["grunt","skeleton"]
+    "keywords": ["grunt","skeleton","compass","sass","scss","mocha","amd","closure"]
 }

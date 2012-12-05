@@ -10,7 +10,6 @@ module.exports = function(grunt) {
 
     /* Environmental options */
 
-    var closureJar = 'bin/closure-compiler/compiler.jar';
     var tmp = 'generated';
 
     /* Input file options */
@@ -21,54 +20,8 @@ module.exports = function(grunt) {
     var nonmodules = ['use', 'use!handlebars', 'tmplPersons'];
 
     /* Option generator functions */
-
-    function closureopts(sources, output, mapfile) {
-
-        var opts = {
-            closureCompiler: closureJar,
-            js: sources,
-            options: {
-                compilation_level: 'SIMPLE_OPTIMIZATIONS',
-                externs: ['vendor/js/require.js'],
-                warning_level: 'quiet',
-                summary_detail_level: 3
-            },
-            output_file: output,
-            checkModified:true
-        };
-
-        if (mapfile) {
-            opts.options.create_source_map = mapfile;
-            opts.options.source_map_format = 'V3';
-        }
-
-        return opts;
-    }
-
-    function lintopts(isdev) {
-        return {
-            options: {
-                curly: true,
-                eqeqeq: true,
-                immed: true,
-                latedef: true,
-                newcap: true,
-                noarg: true,
-                sub: true,
-                undef: true,
-                boss: true,
-                eqnull: true,
-                browser: true, /* Allow 'document' et al */
-                devel: isdev
-            },
-            globals: {
-                jQuery: true,
-                require: true,
-                requirejs: true,
-                define: true
-            }
-        };
-    }
+    var closureopts = require('./tasks/closureopts');
+    var lintopts = require('./tasks/lintopts');
 
     /* 3rd party tasks */
 
@@ -77,63 +30,15 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-clean');
     grunt.loadNpmTasks('grunt-mocha');
     grunt.loadNpmTasks('grunt-compass');
+    grunt.loadNpmTasks('grunt-crusher');
     grunt.loadNpmTasks('grunt-requirejs');
     grunt.loadNpmTasks('grunt-text-replace');
     grunt.loadNpmTasks('grunt-closure-tools');
 
     /* Helper functions */
 
-    /** Returns true if a given output file (out) is older than any of its array of
-      * dependencies (ins) */
-    function shouldBuild(out, ins) {
-        /* TODO: Should always rebuild if grunt.js is modified. Also check in closure compiler call */
-        if (path.existsSync(out)) {
-            var out_mtime =fs.lstatSync(out).mtime;
-            for(var i = 0; i < ins.length; i++) {
-                var f = ins[i];
-                if (fs.lstatSync(f).mtime > out_mtime) {
-                    return true;
-                }
-            }
-        } else {
-            return true;
-        }
-        grunt.log.writeln("Skipped "+ins+" (Not modified)");
-        return false;
-    }
-
-    function copyIfFilesDiffer(from, to) {
-
-        var doCopy = false;
-        var srcContent;
-
-        if (path.existsSync(to)) {
-            var fromstat =fs.lstatSync(from);
-            var tostat =fs.lstatSync(to);
-
-            if (fromstat.size === tostat.size) {
-                srcContent = fs.readFileSync(from);
-                var destContent = fs.readFileSync(to);
-
-                if (String(srcContent) !== String(destContent)) {
-                    doCopy = true;
-                }
-            } else {
-                doCopy = true;
-            }
-        } else {
-            doCopy = true;
-        }
-
-        if (doCopy) {
-            if (!srcContent) {
-                srcContent = fs.readFileSync(from);
-            }
-            grunt.file.mkdir(path.dirname(to));
-
-            fs.writeFileSync(to, srcContent);
-        }
-    }
+    var shouldBuild = require('./tasks/shouldBuild');
+    var copyIfFilesDiffer = require('./tasks/copyIfFilesDiffer');
 
     grunt.registerInitTask('initDev', 'Initialise development build', function() {
 
@@ -354,7 +259,7 @@ module.exports = function(grunt) {
         if (files) {
             files.map(function (f) {
                 var out = path.join(_this.file.dest, path.basename(f));
-                if(shouldBuild(out, files)) {
+                if(shouldBuild(grunt, out, files)) {
                     var content = _this.data.wrapper[0] + grunt.task.directive(f, grunt.file.read) + _this.data.wrapper[1];
                     grunt.file.write(out, content);
                     /* TODO: How to determine if there's an error? We should return false if there is. */
@@ -391,7 +296,7 @@ module.exports = function(grunt) {
         if (this.data.dest_param !== undefined) {
             var out = opts[this.data.dest_param];
             var ins = grunt.file.expandFiles(opts[this.data.srcs_param]);
-            dotask = shouldBuild(out, ins);
+            dotask = shouldBuild(grunt, out, ins);
         }
 
         if(dotask) {
@@ -410,7 +315,7 @@ module.exports = function(grunt) {
         files.forEach(function(f) {
             var name = f.substr(srcDir.length);
             var to = path.join(destDir, name);
-            copyIfFilesDiffer(f, to);
+            copyIfFilesDiffer(grunt, f, to);
         });
     });
 
@@ -429,7 +334,7 @@ module.exports = function(grunt) {
             grunt.file.mkdir(path.dirname(opts.output_file));
             opts.checkModified = true;
 
-            if(!shouldBuild(opts.output_file, [opts.js])) {
+            if(!shouldBuild(grunt, opts.output_file, [opts.js])) {
                 compile(files[0], files.slice(1), maps===undefined?maps:maps.slice(1));
                 return;
             }
@@ -467,7 +372,7 @@ module.exports = function(grunt) {
 
         var precompile = function(f, files) {
             console.log(f, files, data.dest);
-            if(!shouldBuild(data.dest, f)) {
+            if(!shouldBuild(grunt, data.dest, f)) {
                 /* Skip (modified dates excuse us) */
                 precompile(files[0], files.slice(1));
                 return;
@@ -501,7 +406,7 @@ module.exports = function(grunt) {
         grunt.file.mkdir(path.dirname(data.dest));
         grunt.file.mkdir(path.dirname(data.dest)+".amd");
 
-        if(!shouldBuild(data.dest, files)) {
+        if(!shouldBuild(grunt, data.dest, files)) {
             /* Skip (modified dates excuse us) */
             grunt.log.writeln("Skipping "+data.src+" (Not modified)");
             done(true);
@@ -520,7 +425,7 @@ module.exports = function(grunt) {
 
         files.forEach(function(f) {
             var out = path.join(dest, f.substr(srcDir.length));
-            if(shouldBuild(out, [f])) {
+            if(shouldBuild(grunt, out, [f])) {
                 grunt.file.copy(f, out);
             }
         });
