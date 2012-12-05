@@ -18,7 +18,7 @@ module.exports = function(grunt) {
     /* The main module is first. */
     var modules = ['main'];
 
-    var nonmodules = ['use', 'use!handlebars'];
+    var nonmodules = ['use', 'use!handlebars', 'tmplPersons'];
 
     /* Option generator functions */
 
@@ -78,6 +78,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-mocha');
     grunt.loadNpmTasks('grunt-compass');
     grunt.loadNpmTasks('grunt-requirejs');
+    grunt.loadNpmTasks('grunt-text-replace');
     grunt.loadNpmTasks('grunt-closure-tools');
 
     /* Helper functions */
@@ -85,6 +86,7 @@ module.exports = function(grunt) {
     /** Returns true if a given output file (out) is older than any of its array of
       * dependencies (ins) */
     function shouldBuild(out, ins) {
+        /* TODO: Should always rebuild if grunt.js is modified. Also check in closure compiler call */
         if (path.existsSync(out)) {
             var out_mtime =fs.lstatSync(out).mtime;
             for(var i = 0; i < ins.length; i++) {
@@ -167,7 +169,7 @@ module.exports = function(grunt) {
                     jquery: 'https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min',
                     use: '../../vendor/js/use.min',
                     handlebars: 'http://cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.rc.1/handlebars.min',
-                    alltemplates: '../../generated/templates.amd/all'
+                    tmplPersons: '../../generated/templates.amd/persons'
                 },
                 use: {
                     handlebars: { attach: 'Handlebars' }
@@ -200,6 +202,16 @@ module.exports = function(grunt) {
                 src: ['**/*.jpg','**/*.jpeg','**/*.png','**/*.gif'],
                 dest: '<%= vars.out %>/images'
             },
+            sprites: {
+                srcDir: 'src/assets/sprites',
+                src: ['**/*.jpg','**/*.jpeg','**/*.png','**/*.gif'],
+                dest: path.join(tmp, 'sprites')
+            },
+            spritesheets: {
+                srcDir: path.join(tmp, 'sprites'),
+                src: ['*.png'],
+                dest: '<%= vars.out %>/images'
+            },
             pages: {
                 srcDir: 'src/assets',
                 src: ['**/*.htm','**/*.html','**/*.php'],
@@ -212,25 +224,41 @@ module.exports = function(grunt) {
             }
         },
         handlebars: {
-            all: {
-                src: 'src/templates/**/*.handlebars',
-                dest: path.join(tmp, 'templates/all.js')
+            persons: {
+                src: 'src/templates/persons',
+                dest: path.join(tmp, 'templates/persons.js')
             }
         },
         compass: {
             dev: {
                 src: 'src/stylesheets',
-                dest: path.join(tmp, 'css')
+                dest: path.join(tmp, 'css'),
+                images: path.join(tmp, 'sprites'),
+                generated_images_dir: '<%= vars.out %>/images'
             },
             prod: {
                 src: 'src/stylesheets',
-                dest: path.join(tmp, 'css')
+                dest: path.join(tmp, 'css'),
+                images: path.join(tmp, 'sprites'),
+                generated_images_dir: '<%= vars.out %>/images'
+            }
+        },
+        replace: {
+            css_sprites: {
+                src: [path.join(tmp, 'css/*.css')],
+                overwrite: true,
+                replacements: [{
+                    from: 'url(\'/generated/sprites/',
+                    to: "url('../images/"
+                }]
             }
         },
         csslint: {
             all: {
                 src: path.join(tmp, '**/*.css'),
+                /* disable some rules that scss output violates and over which we have no practical control. */
                 rules: {
+                    "adjoining-classes": false
                 }
             }
         },
@@ -275,16 +303,16 @@ module.exports = function(grunt) {
                 srcs_param:'js'
             },
 
-            templates_dev: {
+            templates_persons_dev: {
                 task: 'closureCompiler',
-                opts:closureopts([path.join(tmp, 'templates.amd/**/*.js')], '<%= vars.out %>/js/templates/all.js', '<%= vars.out %>/js/templates/all.map'),
+                opts:closureopts([path.join(tmp, 'templates.amd/**/*.js')], '<%= vars.out %>/js/templates/persons.js', '<%= vars.out %>/js/templates/persons.map'),
                 dest_param:'output_file',
                 srcs_param:'js'
             },
 
-            templates_prod: {
+            templates_persons_prod: {
                 task: 'closureCompiler',
-                opts:closureopts([path.join(tmp, 'templates.amd/**/*.js')], '<%= vars.out %>/js/templates/all.js'),
+                opts:closureopts([path.join(tmp, 'templates.amd/**/*.js')], '<%= vars.out %>/js/templates/persons.js'),
                 dest_param:'output_file',
                 srcs_param:'js'
             }
@@ -402,7 +430,7 @@ module.exports = function(grunt) {
             opts.checkModified = true;
 
             if(!shouldBuild(opts.output_file, [opts.js])) {
-                done();
+                compile(files[0], files.slice(1), maps===undefined?maps:maps.slice(1));
                 return;
             }
 
@@ -427,11 +455,48 @@ module.exports = function(grunt) {
         }
     });
 
-    grunt.registerMultiTask('handlebars', 'Precompile Handlebars templates', function() {
+
+    grunt.registerMultiTask('handlebars-xx', 'Precompile Handlebars templates', function() {
         var data = this.data;
         var done = this.async();
 
         var files = grunt.file.expandFiles(data.src);
+
+        grunt.file.mkdir(path.dirname(data.dest));
+        grunt.file.mkdir(path.dirname(data.dest)+".amd");
+
+        var precompile = function(f, files) {
+            console.log(f, files, data.dest);
+            if(!shouldBuild(data.dest, f)) {
+                /* Skip (modified dates excuse us) */
+                precompile(files[0], files.slice(1));
+                return;
+            }
+
+            var cmd = 'handlebars ' + f + ' -f ' + data.dest;
+            if (files.length>0) {
+                grunt.helper('executeCommand', cmd, function() {
+                    precompile(files[0], files.slice(1));
+                });
+            } else {
+                grunt.helper('executeCommand', cmd, done);
+            }
+        };
+
+
+
+        if(files.length > 0) {
+            precompile(files[0], files.slice(1));
+        } else {
+            done();
+        }
+    });
+
+    grunt.registerMultiTask('handlebars', 'Precompile Handlebars templates', function() {
+        var data = this.data;
+        var done = this.async();
+
+        var files = grunt.file.expandFiles(path.join(data.src, "*.handlebars"));
 
         grunt.file.mkdir(path.dirname(data.dest));
         grunt.file.mkdir(path.dirname(data.dest)+".amd");
@@ -443,7 +508,7 @@ module.exports = function(grunt) {
             return false;
         }
 
-        var cmd = 'handlebars ' + files + ' -f ' + data.dest;
+        var cmd = 'handlebars ' + data.src + ' -f ' + data.dest;
         grunt.helper('executeCommand', cmd, done);
     });
 
@@ -465,12 +530,12 @@ module.exports = function(grunt) {
     /* Alias tasks */
 
     grunt.registerTask('modules', 'copyifchanged:fallbacks copyifchanged:scripts_vendor requirejs:modules copyifchanged:modules');
-    grunt.registerTask('templates', 'handlebars:all amdwrap:templates');
-    grunt.registerTask('css_dev', 'compass:dev csslint cssmin');
-    grunt.registerTask('css_prod', 'compass:prod csslint cssmin');
+    grunt.registerTask('templates', 'handlebars:persons amdwrap:templates');
+    grunt.registerTask('css_dev', 'copyifchanged:sprites compass:dev replace:css_sprites csslint cssmin copyifchanged:spritesheets');
+    grunt.registerTask('css_prod', 'copyifchanged:sprites compass:prod replace:css_sprites csslint cssmin copyifchanged:spritesheets');
     grunt.registerTask('statics', 'copyifchanged:images copyifchanged:pages');
-    grunt.registerTask('jsmin_dev', 'templatize:templates_dev multiCompile:js_dev templatize:main_helpers_dev');
-    grunt.registerTask('jsmin_prod', 'templatize:templates_prod multiCompile:js_prod templatize:main_helpers_prod');
+    grunt.registerTask('jsmin_dev', 'templatize:templates_persons_dev multiCompile:js_dev templatize:main_helpers_dev');
+    grunt.registerTask('jsmin_prod', 'templatize:templates_persons_prod multiCompile:js_prod templatize:main_helpers_prod');
     grunt.registerTask('test', 'mocha');
 
     /* CLI tasks */

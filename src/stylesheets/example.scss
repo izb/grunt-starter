@@ -1,5 +1,14 @@
-@import "compass/css3/border-radius";
+@import "compass";
 @import 'myimport.scss';
+
+$icons-layout:smart;
+$icons-sprite-dimensions:true;
+@import 'icons/*.png';
+@include all-icons-sprites;
+
+$buttons-layout:smart;
+$buttons-sprite-dimensions:true;
+@import 'buttons/*.png';
 
 $fg: #055;
 
@@ -7,4 +16,10 @@ $fg: #055;
     @include border-radius(15px);
     background-color: $col_bg;
     color:$fg;
+}
+
+.littlebutton {
+  @include buttons-sprite(bullet);
+  cursor: pointer;
+  display: inline-block;
 }

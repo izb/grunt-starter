@@ -33,6 +33,7 @@
         "grunt-clean": "~0.3.0",
         "grunt-mocha": "~0.1.2",
         "grunt-wrap": "~0.1.1",
+        "grunt-text-replace": "~0.2.9",
         "chai": "1.1.0"
     },
     "devDependencies": {
