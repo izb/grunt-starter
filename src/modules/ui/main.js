@@ -1,5 +1,7 @@
 define(['lodash','ui/templatizer', 'datasource/main'], function(_, Templatizer, DataSource) {
 
+    'use strict';
+
     function UI() {
         this.tmpl = new Templatizer();
         this.data = new DataSource();

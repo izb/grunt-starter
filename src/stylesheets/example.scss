@@ -1,8 +1,10 @@
+@import "compass/css3/border-radius";
 @import 'myimport.scss';
 
-$fg: #000;
+$fg: #055;
 
-.myclass {
+.result {
+    @include border-radius(15px);
     background-color: $col_bg;
     color:$fg;
 }

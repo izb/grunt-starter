@@ -312,11 +312,11 @@ module.exports = function(grunt) {
                 dest: path.join(tmp, 'templates.amd'),
                 wrapper: ['define([\'use!handlebars\'], function(Handlebars) {\n', '\n});']
             }
+        },
+        watch: {
+             files: ['src/**/*','test/**/*','templates/**/*'],
+             tasks: 'default'
         }
-        // watch: {
-        //     files: '<config:lint.files>',
-        //     tasks: 'lint qunit'
-        // },
     });
 
     grunt.registerMultiTask('amdwrap', 'Wrap files in defines', function() {

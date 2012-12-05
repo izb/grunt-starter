@@ -1,5 +1,7 @@
 define(["ui/main"], function(UI) {
 
+    'use strict';
+
     /* Main entry point */
     return function() {new UI().renderData();};
 
