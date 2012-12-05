@@ -30,7 +30,6 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-clean');
     grunt.loadNpmTasks('grunt-mocha');
     grunt.loadNpmTasks('grunt-compass');
-    grunt.loadNpmTasks('grunt-crusher');
     grunt.loadNpmTasks('grunt-requirejs');
     grunt.loadNpmTasks('grunt-text-replace');
     grunt.loadNpmTasks('grunt-closure-tools');
