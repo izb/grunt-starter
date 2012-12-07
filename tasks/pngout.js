@@ -28,7 +28,7 @@ module.exports = function(grunt) {
                 return;
             }
 
-            var cmd = 'pngout /s0 /y /q "./' + f + '" "./' + output_file + '"';
+            var cmd = 'pngout "./' + f + '" "./' + output_file + '" -s0 -y -q';
             if (files.length>0) {
                 grunt.helper('executeCommand', cmd, function() {
                     compress(files[0], files.slice(1));
