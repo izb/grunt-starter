@@ -22,6 +22,10 @@ module.exports = function(grunt) {
             opts.checkModified = true;
 
             if(!shouldBuild(grunt, opts.output_file, [opts.js])) {
+                if(files.length===0) {
+                    done();
+                    return;
+                }
                 compile(files[0], files.slice(1), maps===undefined?maps:maps.slice(1));
                 return;
             }

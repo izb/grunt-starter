@@ -63,6 +63,7 @@ TODO
 - `grunt clean` will delete all output
 - `grunt rebuild` will perform a full rebuild of your site.
 - `grunt production` will build a release build of your site to `public\www`
+- `grunt rebuildproduction` will perform a full rebuild of the release build of your site to `public\www`
 - `grunt watch` will build incrementally continuously as you edit your files. (This feature may not work reliably at present. YMMV)
 
 Editing your site

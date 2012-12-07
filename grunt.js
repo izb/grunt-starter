@@ -15,7 +15,7 @@ module.exports = function(grunt) {
     /* Input file options */
 
     /* The main module is first. */
-    var modules = ['main'];
+    var modules = ['main', 'showpic/main'];
 
     var nonmodules = ['use', 'use!handlebars', 'tmplPersons'];
 
@@ -91,6 +91,18 @@ module.exports = function(grunt) {
                 modules: (function(){ return modules.map(function(name) { return {name:name,excludeShallow:nonmodules}; }); }())
             }
         },
+        pngout: {
+            images: {
+                srcDir: 'src/assets/images',
+                src: '**/*.png',
+                dest: '<%= vars.out %>/images'
+            },
+            spritesheets: {
+                srcDir: path.join(tmp, 'sprites'),
+                src: '*.png',
+                dest: '<%= vars.out %>/images'
+            }
+        },
         copyifchanged: {
             modules: {
                 /* r.js overwrites files regardless, so we cache the output in modules to preserve the precious modified stamps */
@@ -105,18 +117,13 @@ module.exports = function(grunt) {
             },
             images: {
                 srcDir: 'src/assets/images',
-                src: ['**/*.jpg','**/*.jpeg','**/*.png','**/*.gif'],
+                src: ['**/*.jpg','**/*.jpeg','**/*.gif'],
                 dest: '<%= vars.out %>/images'
             },
             sprites: {
                 srcDir: 'src/assets/sprites',
                 src: ['**/*.jpg','**/*.jpeg','**/*.png','**/*.gif'],
                 dest: path.join(tmp, 'sprites')
-            },
-            spritesheets: {
-                srcDir: path.join(tmp, 'sprites'),
-                src: ['*.png'],
-                dest: '<%= vars.out %>/images'
             },
             pages: {
                 srcDir: 'src/assets',
@@ -257,9 +264,9 @@ module.exports = function(grunt) {
 
     grunt.registerTask('modules', 'copyifchanged:fallbacks copyifchanged:scripts_vendor requirejs:modules copyifchanged:modules');
     grunt.registerTask('templates', 'handlebars:persons amdwrap:templates');
-    grunt.registerTask('css_dev', 'copyifchanged:sprites compass:dev replace:css_sprites csslint cssmin copyifchanged:spritesheets');
-    grunt.registerTask('css_prod', 'copyifchanged:sprites compass:prod replace:css_sprites csslint cssmin copyifchanged:spritesheets');
-    grunt.registerTask('statics', 'copyifchanged:images copyifchanged:pages');
+    grunt.registerTask('css_dev', 'copyifchanged:sprites compass:dev replace:css_sprites csslint cssmin pngout:spritesheets');
+    grunt.registerTask('css_prod', 'copyifchanged:sprites compass:prod replace:css_sprites csslint cssmin pngout:spritesheets');
+    grunt.registerTask('statics', 'pngout:images copyifchanged:images copyifchanged:pages');
     grunt.registerTask('jsmin_dev', 'templatize:templates_persons_dev multiCompile:js_dev templatize:main_helpers_dev');
     grunt.registerTask('jsmin_prod', 'templatize:templates_persons_prod multiCompile:js_prod templatize:main_helpers_prod');
     grunt.registerTask('test', 'mocha');
@@ -268,5 +275,6 @@ module.exports = function(grunt) {
 
     grunt.registerTask('default', 'initDev lint:dev templates modules jsmin_dev css_dev statics test summarize');
     grunt.registerTask('rebuild', 'clean default');
+    grunt.registerTask('rebuildproduction', 'clean production');
     grunt.registerTask('production', 'initProd clean lint:prod templates modules jsmin_prod css_prod statics test summarize');
 };

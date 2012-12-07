@@ -1,3 +1,4 @@
+/*global require:true,late_require:true*/
 define(['jquery', 'lodash','ui/templatizer', 'datasource/main'], function($, _, Templatizer, DataSource) {
 
     'use strict';
@@ -9,6 +10,12 @@ define(['jquery', 'lodash','ui/templatizer', 'datasource/main'], function($, _, 
         var _this = this;
 
         $('#showages').click(function() {_this.onShowAges();});
+
+        $('#showpic').click(function() {
+            late_require(['showpic/main'], function(ShowPic) {
+                new ShowPic().show();
+            });
+        });
     }
 
     UI.prototype.onShowAges = function() {
