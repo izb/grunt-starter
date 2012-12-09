@@ -1,5 +1,7 @@
 @import "compass";
-@import 'myimport.scss';
+@import '../../vendor/stylesheets/normalize.scss';
+@import 'imports/base.scss';
+@import 'imports/myimport.scss';
 
 $icons-layout:smart;
 $icons-sprite-dimensions:true;
@@ -24,3 +26,5 @@ $fg: #055;
   display: inline-block;
   border:0;
 }
+
+@import '../../vendor/stylesheets/helpers.scss';

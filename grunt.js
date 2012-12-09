@@ -134,7 +134,13 @@ module.exports = function(grunt) {
                 srcDir: 'vendor/js',
                 src: ['require.js','use.min.js','handlebars.runtime-1.0.0.rc.1.min.js'],
                 dest: '<%= vars.out %>/js'
+            },
+            css: {
+                srcDir: path.join(tmp, 'css'),
+                src: ['*.css'],
+                dest: '<%= vars.out %>/css'
             }
+
         },
         handlebars: {
             persons: {
@@ -147,13 +153,15 @@ module.exports = function(grunt) {
                 src: 'src/stylesheets',
                 dest: path.join(tmp, 'css'),
                 images: path.join(tmp, 'sprites'),
-                generated_images_dir: '<%= vars.out %>/images'
+                generated_images_dir: '<%= vars.out %>/images',
+                outputstyle: 'expanded'
             },
             prod: {
                 src: 'src/stylesheets',
                 dest: path.join(tmp, 'css'),
                 images: path.join(tmp, 'sprites'),
-                generated_images_dir: '<%= vars.out %>/images'
+                generated_images_dir: '<%= vars.out %>/images',
+                outputstyle: 'compressed'
             }
         },
         replace: {
@@ -168,17 +176,11 @@ module.exports = function(grunt) {
         },
         csslint: {
             all: {
-                src: path.join(tmp, '**/*.css'),
+                src: '<%= vars.out %>/css',
                 /* disable some rules that scss output violates and over which we have no practical control. */
                 rules: {
                     "adjoining-classes": false
                 }
-            }
-        },
-        cssmin: {
-            all: {
-                src: ["vendor/stylesheets/normalize.css", path.join(tmp, '**/*.css'), "vendor/stylesheets/helpers.css"],
-                dest: '<%= vars.out %>/css/all.css'
             }
         },
         multiCompile: {
@@ -264,8 +266,8 @@ module.exports = function(grunt) {
 
     grunt.registerTask('modules', 'copyifchanged:fallbacks copyifchanged:scripts_vendor requirejs:modules copyifchanged:modules');
     grunt.registerTask('templates', 'handlebars:persons amdwrap:templates');
-    grunt.registerTask('css_dev', 'copyifchanged:sprites compass:dev replace:css_sprites csslint cssmin pngout:spritesheets');
-    grunt.registerTask('css_prod', 'copyifchanged:sprites compass:prod replace:css_sprites csslint cssmin pngout:spritesheets');
+    grunt.registerTask('css_dev', 'copyifchanged:sprites compass:dev replace:css_sprites csslint copyifchanged:css pngout:spritesheets');
+    grunt.registerTask('css_prod', 'copyifchanged:sprites compass:prod replace:css_sprites csslint copyifchanged:css pngout:spritesheets');
     grunt.registerTask('statics', 'pngout:images copyifchanged:images copyifchanged:pages');
     grunt.registerTask('jsmin_dev', 'templatize:templates_persons_dev multiCompile:js_dev templatize:main_helpers_dev');
     grunt.registerTask('jsmin_prod', 'templatize:templates_persons_prod multiCompile:js_prod templatize:main_helpers_prod');
