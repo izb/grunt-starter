@@ -139,8 +139,17 @@ module.exports = function(grunt) {
                 srcDir: path.join(tmp, 'css'),
                 src: ['*.css'],
                 dest: '<%= vars.out %>/css'
+            },
+            compressed_images: {
+                srcDir: 'src/assets/images',
+                src: ['**/*.png'],
+                dest: '<%= vars.out %>/images'
+            },
+            compressed_spritesheets: {
+                srcDir: path.join(tmp, 'sprites'),
+                src: ['*.png'],
+                dest: '<%= vars.out %>/images'
             }
-
         },
         handlebars: {
             persons: {
@@ -266,18 +275,19 @@ module.exports = function(grunt) {
 
     grunt.registerTask('modules', 'copyifchanged:fallbacks copyifchanged:scripts_vendor requirejs:modules copyifchanged:modules');
     grunt.registerTask('templates', 'handlebars:persons amdwrap:templates');
-    grunt.registerTask('css_dev', 'copyifchanged:sprites compass:dev replace:css_sprites csslint copyifchanged:css pngout:spritesheets');
+    grunt.registerTask('css_dev', 'copyifchanged:sprites compass:dev replace:css_sprites csslint copyifchanged:css copyifchanged:compressed_spritesheets');
     grunt.registerTask('css_prod', 'copyifchanged:sprites compass:prod replace:css_sprites csslint copyifchanged:css pngout:spritesheets');
-    grunt.registerTask('statics', 'pngout:images copyifchanged:images copyifchanged:pages');
+    grunt.registerTask('statics_dev', 'copyifchanged:compressed_images copyifchanged:images copyifchanged:pages');
+    grunt.registerTask('statics_prod', 'pngout:images copyifchanged:images copyifchanged:pages');
     grunt.registerTask('jsmin_dev', 'templatize:templates_persons_dev multiCompile:js_dev templatize:main_helpers_dev');
     grunt.registerTask('jsmin_prod', 'templatize:templates_persons_prod multiCompile:js_prod templatize:main_helpers_prod');
     grunt.registerTask('test', 'mocha');
 
     /* CLI tasks */
 
-    grunt.registerTask('notest', 'initDev lint:dev templates modules jsmin_dev css_dev statics');
+    grunt.registerTask('notest', 'initDev lint:dev templates modules jsmin_dev css_dev statics_dev');
     grunt.registerTask('default', 'notest test summarize');
     grunt.registerTask('rebuild', 'clean default');
     grunt.registerTask('rebuildproduction', 'clean production');
-    grunt.registerTask('production', 'initProd clean lint:prod templates modules jsmin_prod css_prod statics test summarize');
+    grunt.registerTask('production', 'initProd clean lint:prod templates modules jsmin_prod css_prod statics_prod test summarize');
 };
