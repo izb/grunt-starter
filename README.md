@@ -64,6 +64,7 @@ TODO
 - `grunt rebuild` will perform a full rebuild of your site.
 - `grunt production` will build a release build of your site to `public\www`
 - `grunt watch` will build incrementally continuously as you edit your files. (This feature may not work reliably at present. YMMV)
+- `grunt notest` Will do a default dev build with no unit testing. Runs a bit faster than a normal build.
 
 Editing your site
 =================

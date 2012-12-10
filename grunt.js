@@ -275,7 +275,8 @@ module.exports = function(grunt) {
 
     /* CLI tasks */
 
-    grunt.registerTask('default', 'initDev lint:dev templates modules jsmin_dev css_dev statics test summarize');
+    grunt.registerTask('notest', 'initDev lint:dev templates modules jsmin_dev css_dev statics');
+    grunt.registerTask('default', 'notest test summarize');
     grunt.registerTask('rebuild', 'clean default');
     grunt.registerTask('rebuildproduction', 'clean production');
     grunt.registerTask('production', 'initProd clean lint:prod templates modules jsmin_prod css_prod statics test summarize');
