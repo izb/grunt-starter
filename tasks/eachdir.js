@@ -39,22 +39,6 @@ module.exports = function(grunt) {
         } else {
             done();
         }
-
-
-        // var opts = processObject(this.data.opts);
-
-        // var dotask = true;
-        // if (this.data.dest_param !== undefined) {
-        //     var out = opts[this.data.dest_param];
-        //     var ins = grunt.file.expandFiles(opts[this.data.srcs_param]);
-        //     dotask = shouldBuild(grunt, out, ins);
-        // }
-
-        // if(dotask) {
-        //     grunt.helper(this.data.task, opts, done);
-        // } else {
-        //     done();
-        // }
     });
 
 };
