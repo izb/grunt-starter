@@ -66,6 +66,29 @@ TODO
 - `grunt watch` will build incrementally continuously as you edit your files. (This feature may not work reliably at present. YMMV)
 - `grunt notest` Will do a default dev build with no unit testing. Runs a bit faster than a normal build.
 
+### A note on source-maps
+
+You may notice that source maps do not work out of the box. This is because there's a hard link between the map file and the URL of the source JS which is automatically copied to the output in development builds.
+
+In order to enable source maps, you should be accessing your local files via a local development server. Once this is done, you will need to tweak the build script to link to the correct path in your map files. E.g. if your development server is accessing `public.dev/www` on the URL
+
+    http://127.0.0.1/mywebsite
+
+Then you need to edit the `maplink` task in the script, adding in your top-level subfolder, e.g.
+
+    maplink: {
+        dev: {
+            src: '<%= vars.out %>/js',
+            rootpath: '/mywebsite/js',
+            srcroot: '<%= vars.out %>/js',
+            badmaproot: tmp,
+            goodmaproot: '/mywebsite/mappedsrc'
+        }
+    }
+
+Note that `mywebsite` is added in 2 places in that task configuration.
+
+
 Editing your site
 =================
 
@@ -81,6 +104,9 @@ Adding JavaScript modules
 -------------------------
 
 TODO
+
+Note: Remember to explain how to minify inline JS.
+
 
 Adding pages, stylesheets and static files
 ------------------------------------------

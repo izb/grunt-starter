@@ -115,9 +115,14 @@ module.exports = function(grunt) {
                 src: ['jquery-1.8.3.min.js', 'lodash-0.10.0.min.js'],
                 dest: '<%= vars.out %>/js'
             },
+            sourcemapsources: {
+                srcDir: tmp,
+                src: ['templates.amd/**/*.js', 'modules/**/*.js'],
+                dest: '<%= vars.out %>/mappedsrc'
+            },
             images: {
                 srcDir: 'src/assets/images',
-                src: ['**/*.jpg','**/*.jpeg','**/*.gif'],
+                src: ['**/*.jpg','**/*.jpeg','**/*.gif','*.ico'],
                 dest: '<%= vars.out %>/images'
             },
             sprites: {
@@ -149,6 +154,15 @@ module.exports = function(grunt) {
                 srcDir: path.join(tmp, 'sprites'),
                 src: ['*.png'],
                 dest: '<%= vars.out %>/images'
+            }
+        },
+        maplink: {
+            dev: {
+                src: '<%= vars.out %>/js',
+                rootpath: '/js', /* Note a dev build might build to a subfolder on a local server. You might need to tweak this. */
+                srcroot: '<%= vars.out %>/js',
+                badmaproot: tmp,
+                goodmaproot: '/mappedsrc' /* ... also this. */
             }
         },
         handlebars: {
@@ -277,9 +291,10 @@ module.exports = function(grunt) {
     grunt.registerTask('templates', 'handlebars:persons amdwrap:templates');
     grunt.registerTask('css_dev', 'copyifchanged:sprites compass:dev replace:css_sprites csslint copyifchanged:css copyifchanged:compressed_spritesheets');
     grunt.registerTask('css_prod', 'copyifchanged:sprites compass:prod replace:css_sprites csslint copyifchanged:css pngout:spritesheets');
+    grunt.registerTask('sourcemapping', 'maplink:dev copyifchanged:sourcemapsources');
     grunt.registerTask('statics_dev', 'copyifchanged:compressed_images copyifchanged:images copyifchanged:pages');
     grunt.registerTask('statics_prod', 'pngout:images copyifchanged:images copyifchanged:pages');
-    grunt.registerTask('jsmin_dev', 'templatize:templates_persons_dev multiCompile:js_dev templatize:main_helpers_dev');
+    grunt.registerTask('jsmin_dev', 'templatize:templates_persons_dev multiCompile:js_dev templatize:main_helpers_dev sourcemapping');
     grunt.registerTask('jsmin_prod', 'templatize:templates_persons_prod multiCompile:js_prod templatize:main_helpers_prod');
     grunt.registerTask('test', 'mocha');
 

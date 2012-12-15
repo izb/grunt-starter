@@ -6,7 +6,7 @@
     "contributors": [],
     "name": "grunt-starter",
     "description": "A website project skeleton using grunt as a builder",
-    "version": "0.5.0",
+    "version": "0.6.0",
     "homepage": "http://github.com/izb/grunt-starter",
     "repository": {
         "type": "git",
