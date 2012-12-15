@@ -13,6 +13,7 @@ The ultimate starter skeleton for your new website. Out of the box, you get a bu
 - Minified CSS (UglifyCSS)
 - CSS reset out of the box
 - Minified JavaScript with Google's closure compiler
+- Source map support for easy stepping through of minified JS in the browser
 - Browser unit testing using phantomjs, mocha and chai
 
 How to use
@@ -88,6 +89,7 @@ Then you need to edit the `maplink` task in the script, adding in your top-level
 
 Note that `mywebsite` is added in 2 places in that task configuration.
 
+TODO: How to enable source maps in production
 
 Editing your site
 =================
