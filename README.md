@@ -16,6 +16,8 @@ The ultimate starter skeleton for your new website. Out of the box, you get a bu
 - Source map support for easy stepping through of minified JS in the browser
 - Browser unit testing using phantomjs, mocha and chai
 
+[![Flattr this git repo](http://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=izb&url=https://github.com/izb/grunt-starter&title=grunt-starter&language=&tags=github&category=software)
+
 How to use
 ----------
 
