@@ -36,6 +36,8 @@ There are a number of tools you need to have installed before you can create you
 
 To use this script, you need to make a copy of the entire repository and call it your own. Don't fork this repo; you're creating a whole new separate project using the files as a starting point.
 
+(Because of this, I won't know if you use it, so remember to give love by starring the project or just letting me know it's been of use.)
+
 - Clone the grunt-starter repo
 - Copy it to a new directory for your website without the `.git` folder
 - Save it to your source repository of choice.
