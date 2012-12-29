@@ -41,20 +41,20 @@ module.exports = function(grunt) {
     var shouldBuild = require('./tasks/lib/shouldBuild');
     var copyIfFilesDiffer = require('./tasks/lib/copyIfFilesDiffer');
 
-    grunt.registerInitTask('initDev', 'Initialise development build', function() {
-
+    grunt.registerTask('initDev', 'Initialise development build', function() {
         grunt.log.writeln("This is a development build");
 
-        grunt.config('vars.out', 'public.dev/www');
-
+        if (grunt.config('vars.out')===undefined) {
+            grunt.config('vars.out', 'public.dev/www');
+        }
     });
 
-    grunt.registerInitTask('initProd', 'Initialise production build', function() {
-
+    grunt.registerTask('initProd', 'Initialise production build', function() {
         grunt.log.writeln("This is a production build");
 
-        grunt.config('vars.out', 'public/www');
-
+        if (grunt.config('vars.out')===undefined) {
+            grunt.config('vars.out', 'public/www');
+        }
     });
 
     grunt.registerInitTask('summarize', 'Summarize the build', function() {
@@ -281,7 +281,7 @@ module.exports = function(grunt) {
         },
         watch: {
              files: ['src/**/*','test/**/*','templates/**/*'],
-             tasks: 'default'
+             tasks: 'notest'
         }
     });
 
