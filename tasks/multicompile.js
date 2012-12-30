@@ -1,4 +1,4 @@
-/*global require:true*/
+/*global require:true,console:true*/
 module.exports = function(grunt) {
 
     'use strict';
@@ -16,12 +16,12 @@ module.exports = function(grunt) {
 
         var compile = function(f, files, maps) {
             opts.js = f.replace(/\\/g, '/');
-            opts.output_file = path.join(outdir, f.substr(leading)).replace(/\\/g, '/');
-            opts.output_file = grunt.template.process(opts.output_file);
-            grunt.file.mkdir(path.dirname(opts.output_file));
+            var output_file = path.join(outdir, f.substr(leading)).replace(/\\/g, '/');
+            output_file = grunt.template.process(output_file);
+            grunt.file.mkdir(path.dirname(output_file));
             opts.checkModified = true;
 
-            if(!shouldBuild(grunt, opts.output_file, [opts.js])) {
+            if(!shouldBuild(grunt, output_file, [opts.js])) {
                 if(files.length===0) {
                     done();
                     return;

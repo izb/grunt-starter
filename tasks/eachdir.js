@@ -10,9 +10,9 @@ module.exports = function(grunt) {
     grunt.registerMultiTask('eachdir', 'Repeats a task in each subfolder of a directory.', function() {
 
         var dirs = fs.readdirSync(this.data.src).filter(function(p) {var s = fs.statSync(p);return s.isDirectory();});
+        var opts = this.data.opts;
 
         var done = this.async();
-
 
         var runtask = function(d, dirs) {
 

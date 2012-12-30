@@ -256,8 +256,9 @@ module.exports = function(grunt) {
             }
         },
         lint: {
-            dev:  ['grunt.js', 'src/**/*.js', 'test/mocha/**/*.js'],
-            prod: ['grunt.js', 'src/**/*.js', 'test/mocha/**/*.js']
+            build:  ['grunt.js', 'tasks/**/*.js'],
+            site:  ['src/**/*.js'],
+            test:  ['test/mocha/**/*.js']
         },
         jshint: {
             dev:  (function() { return lintopts(true); }()), /* true for in-dev option */
@@ -280,8 +281,30 @@ module.exports = function(grunt) {
             }
         },
         watch: {
-             files: ['src/**/*','test/**/*','templates/**/*'],
-             tasks: 'notest'
+            js: {
+                files: ['src/modules/**/*.js'],
+                tasks: 'initDev lint:site modules jsmin_dev'
+            },
+            templates: {
+                files: ['src/templates/**/*.handlebars'],
+                tasks: 'initDev templates modules jsmin_dev'
+            },
+            assets_pages: {
+                files: ['src/assets/**/*.htm','src/assets/**/*.html','src/assets/**/*.php'],
+                tasks: 'initDev statics_dev'
+            },
+            assets_images: {
+                files: ['src/assets/**/*.gif','src/assets/**/*.png','src/assets/**/*.jpg','src/assets/**/*.jpeg'],
+                tasks: 'initDev css_dev statics_dev'
+            },
+            css: {
+                files: ['src/stylesheets/**/*'],
+                tasks: 'initDev css_dev'
+            },
+            test: {
+                files: ['test/**/*'],
+                tasks: 'notest test'
+            }
         }
     });
 
@@ -300,7 +323,7 @@ module.exports = function(grunt) {
 
     /* CLI tasks */
 
-    grunt.registerTask('notest', 'initDev lint:dev templates modules jsmin_dev css_dev statics_dev');
+    grunt.registerTask('notest', 'initDev lint:build lint:site lint:test templates modules jsmin_dev css_dev statics_dev');
     grunt.registerTask('default', 'notest test summarize');
     grunt.registerTask('rebuild', 'clean default');
     grunt.registerTask('rebuildproduction', 'clean production');

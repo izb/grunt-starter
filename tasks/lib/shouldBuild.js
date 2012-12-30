@@ -1,3 +1,4 @@
+/*global require:true*/
 /** Returns true if a given output file (out) is older than any of its array of
   * dependencies (ins) */
 module.exports = function shouldBuild(grunt, out, ins) {
