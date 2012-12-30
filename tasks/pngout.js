@@ -1,4 +1,3 @@
-/*global require:true,console:true*/
 module.exports = function(grunt) {
 
     'use strict';

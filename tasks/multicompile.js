@@ -1,5 +1,6 @@
-/*global require:true,console:true*/
 module.exports = function(grunt) {
+
+    'use strict';
 
     var path = require('path');
     var shouldBuild = require('./lib/shouldBuild');
@@ -12,23 +13,23 @@ module.exports = function(grunt) {
             out = [];
             var len = obj.length;
             for (i=0 ; i < len; i++ ) {
-                out[i] = arguments.callee(obj[i]);
+                out[i] = deepCopy(obj[i]);
             }
             return out;
         }
+
         if (typeof obj === 'object') {
             out = {};
             for ( i in obj ) {
-                out[i] = arguments.callee(obj[i]);
+                out[i] = deepCopy(obj[i]);
             }
             return out;
         }
+
         return obj;
     }
     /** Like closureCompiler, but minifies source files individually without concat (require.js has already concatted enough) */
     grunt.registerMultiTask('multiCompile', 'Call a grunt task on a group of source files one at a time individually', function() {
-
-        'use strict';
 
         var data = this.data;
         var files = grunt.file.expandFiles(data.src);

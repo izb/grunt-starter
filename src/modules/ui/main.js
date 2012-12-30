@@ -1,4 +1,4 @@
-/*global require:true,late_require:true*/
+/*global late_require:true*/
 define(['jquery', 'lodash','ui/templatizer', 'datasource/main'], function($, _, Templatizer, DataSource) {
 
     'use strict';

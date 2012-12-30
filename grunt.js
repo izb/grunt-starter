@@ -21,7 +21,6 @@ module.exports = function(grunt) {
 
     /* Option generator functions */
     var closureopts = require('./tasks/lib/closureopts');
-    var lintopts = require('./tasks/lib/lintopts');
 
     /* 3rd party tasks */
 
@@ -257,12 +256,39 @@ module.exports = function(grunt) {
         },
         lint: {
             build:  ['grunt.js', 'tasks/**/*.js'],
-            site:  ['src/**/*.js'],
+            site_dev:  ['src/**/*.js'],
+            site_prod:  ['src/**/*.js'],
             test:  ['test/mocha/**/*.js']
         },
         jshint: {
-            dev:  (function() { return lintopts(true); }()), /* true for in-dev option */
-            prod: (function() { return lintopts(false); }()) /* false for production (no console) */
+            options: {
+                curly: true,
+                eqeqeq: true,
+                immed: true,
+                latedef: true,
+                newcap: true,
+                noarg: true,
+                sub: true,
+                undef: true,
+                boss: true,
+                eqnull: true
+            },
+            build: {
+                options:{devel:true,node:true},
+                globals:{}
+            },
+            site_dev: {
+                options:{devel:true,browser:true},
+                globals:{}
+            },
+            site_prod: {
+                options:{devel:false,browser:true},
+                globals:{}
+            },
+            test: {
+                options:{devel:true},
+                globals:{}
+            }
         },
         clean: {
             tmp: tmp,
@@ -283,7 +309,7 @@ module.exports = function(grunt) {
         watch: {
             js: {
                 files: ['src/modules/**/*.js'],
-                tasks: 'initDev lint:site modules jsmin_dev'
+                tasks: 'initDev lint:site_dev modules jsmin_dev'
             },
             templates: {
                 files: ['src/templates/**/*.handlebars'],
@@ -319,8 +345,8 @@ module.exports = function(grunt) {
     grunt.registerTask('statics_prod', 'pngout:images copyifchanged:images copyifchanged:pages');
     grunt.registerTask('jsmin_dev', 'templatize:templates_persons_dev multiCompile:js_dev templatize:main_helpers_dev sourcemapping');
     grunt.registerTask('jsmin_prod', 'templatize:templates_persons_prod multiCompile:js_prod templatize:main_helpers_prod');
-    grunt.registerTask('lint_dev', 'lint:build lint:site lint:test');
-    grunt.registerTask('lint_prod', 'lint:build lint:site lint:test');
+    grunt.registerTask('lint_dev', 'lint:build lint:site_dev lint:test');
+    grunt.registerTask('lint_prod', 'lint:build lint:site_prod lint:test');
     grunt.registerTask('test', 'mocha');
 
     /* CLI tasks */
