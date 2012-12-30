@@ -319,13 +319,15 @@ module.exports = function(grunt) {
     grunt.registerTask('statics_prod', 'pngout:images copyifchanged:images copyifchanged:pages');
     grunt.registerTask('jsmin_dev', 'templatize:templates_persons_dev multiCompile:js_dev templatize:main_helpers_dev sourcemapping');
     grunt.registerTask('jsmin_prod', 'templatize:templates_persons_prod multiCompile:js_prod templatize:main_helpers_prod');
+    grunt.registerTask('lint_dev', 'lint:build lint:site lint:test');
+    grunt.registerTask('lint_prod', 'lint:build lint:site lint:test');
     grunt.registerTask('test', 'mocha');
 
     /* CLI tasks */
 
-    grunt.registerTask('notest', 'initDev lint:build lint:site lint:test templates modules jsmin_dev css_dev statics_dev');
+    grunt.registerTask('notest', 'initDev lint_dev templates modules jsmin_dev css_dev statics_dev');
     grunt.registerTask('default', 'notest test summarize');
     grunt.registerTask('rebuild', 'clean default');
     grunt.registerTask('rebuildproduction', 'clean production');
-    grunt.registerTask('production', 'initProd clean lint:prod templates modules jsmin_prod css_prod statics_prod test summarize');
+    grunt.registerTask('production', 'initProd clean lint_prod templates modules jsmin_prod css_prod statics_prod test summarize');
 };
