@@ -206,6 +206,9 @@ module.exports = function(grunt) {
             }
         },
         multiCompile: {
+
+            /* multiCompiler wraps the closure compiler task in a 'for each' style series of calls that iterates over the modules array. */
+
             js_dev: {
                 /* Source is only the js that was output from r.js, inferred by the module list. Omit the main module as
                  * we will do that separately, linked with any helper js files we may have. */
@@ -225,6 +228,8 @@ module.exports = function(grunt) {
         templatize: {
 
             /* templatize is a hack around grunt plugins that don't support templatized option values. */
+
+            /* Here, we use it to make individual calls to the closure compiler, passing templatized strings to the output and map options. */
 
             main_helpers_dev: {
                 task: 'closureCompiler',
