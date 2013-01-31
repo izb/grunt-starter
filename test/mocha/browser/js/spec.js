@@ -8,8 +8,8 @@ define(['jquery', 'chai', 'main', 'use!handlebars'], function($, chai, run, Hand
         describe('app structure', function() {
 
             describe('vendors', function() {
-                it('should use jQuery 1.8.3', function(){
-                    expect($.fn.jquery).to.equal('1.8.3');
+                it('should use jQuery 1.9.0', function(){
+                    expect($.fn.jquery).to.equal('1.9.0');
                 });
             });
 

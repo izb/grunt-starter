@@ -70,10 +70,10 @@ module.exports = function(grunt) {
                 baseUrl: '.',
                 paths: {
                     /* These CDN URLs have local fallbacks in src/modules/main.js */
-                    lodash: 'http://cdnjs.cloudflare.com/ajax/libs/lodash.js/0.10.0/lodash.min',
-                    jquery: 'https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min',
+                    lodash: 'http://cdnjs.cloudflare.com/ajax/libs/lodash.js/1.0.0-rc.3/lodash.min',
+                    jquery: 'https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min',
                     use: '../../vendor/js/use.min',
-                    handlebars: 'http://cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.rc.1/handlebars.min',
+                    handlebars: 'http://cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.rc.2/handlebars.runtime.min',
                     tmplPersons: '../../generated/templates.amd/persons'
                 },
                 use: {
@@ -111,7 +111,7 @@ module.exports = function(grunt) {
             },
             fallbacks: {
                 srcDir: 'vendor/js',
-                src: ['jquery-1.8.3.min.js', 'lodash-0.10.0.min.js'],
+                src: ['jquery-1.9.0.min.js', 'lodash-1.0.0-rc3.min.js'],
                 dest: '<%= vars.out %>/js'
             },
             sourcemapsources: {
@@ -136,7 +136,7 @@ module.exports = function(grunt) {
             },
             scripts_vendor: {
                 srcDir: 'vendor/js',
-                src: ['require.js','use.min.js','handlebars.runtime-1.0.0.rc.1.min.js'],
+                src: ['require.js','use.min.js','handlebars.runtime-1.0.rc.2.min.js'],
                 dest: '<%= vars.out %>/js'
             },
             css: {

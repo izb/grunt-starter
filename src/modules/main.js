@@ -7,9 +7,9 @@ define(["ui/main"], function(UI) {
 
 }, function (err) {
     var cdnFallbacks = {
-        jquery: 'js/jquery-1.8.3.min',
-        lodash: 'js/lodash-0.10.0.min',
-        handlebars: 'js/handlebars.runtime-1.0.0.rc.1.min'
+        jquery: 'js/jquery-1.9.0.min',
+        lodash: 'js/lodash-1.0.0-rc3.min',
+        handlebars: 'js/handlebars.runtime-1.0.rc.2.min'
     };
     var id = err.requireModules && err.requireModules[0];
     if (cdnFallbacks.hasOwnProperty(id)) {
