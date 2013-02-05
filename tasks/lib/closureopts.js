@@ -1,4 +1,4 @@
-module.exports = function closureopts(sources, output, mapfile) {
+module.exports = function closureopts(isdev, sources, output, mapfile) {
 
     'use strict';
 
@@ -16,6 +16,10 @@ module.exports = function closureopts(sources, output, mapfile) {
         output_file: output,
         checkModified:true
     };
+
+    if (isdev) {
+        opts.options.compilation_level = 'WHITESPACE_ONLY';
+    }
 
     if (mapfile) {
         opts.options.create_source_map = mapfile;

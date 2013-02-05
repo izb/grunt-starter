@@ -215,14 +215,14 @@ module.exports = function(grunt) {
                 src: (function(){ return modules.slice(1).map(function(name) { return path.join(tmp, 'modules', name + '.js'); }); }()),
                 srcDir: path.join(tmp, 'modules'),
                 maps: (function(){ return modules.slice(1).map(function(name) { return path.join('<%= vars.out %>/js', name + '.map'); }); }()),
-                opts: closureopts('', '<%= vars.out %>/js')
+                opts: closureopts(true, '', '<%= vars.out %>/js')
             },
             js_prod: {
                 /* Source is only the js that was output from r.js, inferred by the module list. Omit the main module as
                  * we will do that separately, linked with any helper js files we may have. */
                 src: (function(){ return modules.slice(1).map(function(name) { return path.join(tmp, 'modules', name + '.js'); }); }()),
                 srcDir: path.join(tmp, 'modules'),
-                opts: closureopts('', '<%= vars.out %>/js')
+                opts: closureopts(false, '', '<%= vars.out %>/js')
             }
         },
         templatize: {
@@ -233,28 +233,28 @@ module.exports = function(grunt) {
 
             main_helpers_dev: {
                 task: 'closureCompiler',
-                opts:closureopts([path.join(tmp, 'modules/main.js')], '<%= vars.out %>/js/main.js', '<%= vars.out %>/js/main.map'),
+                opts:closureopts(true, [path.join(tmp, 'modules/main.js')], '<%= vars.out %>/js/main.js', '<%= vars.out %>/js/main.map'),
                 dest_param:'output_file',
                 srcs_param:'js'
             },
 
             main_helpers_prod: {
                 task: 'closureCompiler',
-                opts:closureopts([path.join(tmp, 'modules/main.js')], '<%= vars.out %>/js/main.js'),
+                opts:closureopts(false, [path.join(tmp, 'modules/main.js')], '<%= vars.out %>/js/main.js'),
                 dest_param:'output_file',
                 srcs_param:'js'
             },
 
             templates_persons_dev: {
                 task: 'closureCompiler',
-                opts:closureopts([path.join(tmp, 'templates.amd/**/*.js')], '<%= vars.out %>/js/templates/persons.js', '<%= vars.out %>/js/templates/persons.map'),
+                opts:closureopts(true, [path.join(tmp, 'templates.amd/**/*.js')], '<%= vars.out %>/js/templates/persons.js', '<%= vars.out %>/js/templates/persons.map'),
                 dest_param:'output_file',
                 srcs_param:'js'
             },
 
             templates_persons_prod: {
                 task: 'closureCompiler',
-                opts:closureopts([path.join(tmp, 'templates.amd/**/*.js')], '<%= vars.out %>/js/templates/persons.js'),
+                opts:closureopts(false, [path.join(tmp, 'templates.amd/**/*.js')], '<%= vars.out %>/js/templates/persons.js'),
                 dest_param:'output_file',
                 srcs_param:'js'
             }
