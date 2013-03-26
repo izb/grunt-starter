@@ -17,6 +17,21 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-imagemin');
     grunt.loadNpmTasks('grunt-contrib-cssmin');
 
+    var requireConfig = {
+        baseUrl: 'js/',
+        paths: {
+            jquery: ['http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min', 'jquery.min'],
+            lodash: ['http://cdnjs.cloudflare.com/ajax/libs/lodash.js/1.0.0-rc.3/lodash.min', 'lodash.min'],
+            /* TODO: Handlebars isn't minified in the fallback */
+            handlebars: ['http://cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.0-rc.3/handlebars.runtime.min', 'handlebars.runtime']
+        },
+        shim: {
+            handlebars: {
+                exports: 'Handlebars'
+            }
+        }
+    };
+
     var isNewer = function(src,dest) {
         if (!fs.existsSync(dest)) {
             return true;
@@ -96,6 +111,13 @@ module.exports = function(grunt) {
                         return isNewer(from, "dist/css"+from.substring(7));
                     }
                 }]
+            },
+            components: {
+                files: [
+                    {dest:"dist/js/jquery.min.js", src:"component/jquery/jquery.min.js"},
+                    {dest:"dist/js/handlebars.runtime.js", src:"component/handlebars/handlebars.runtime.js"},
+                    {dest:"dist/js/lodash.min.js", src:"component/lodash/dist/lodash.min.js"}
+                ]
             }
         },
         handlebars: {
@@ -150,6 +172,17 @@ module.exports = function(grunt) {
                         return isNewer("tmp/modules"+from.substring(15), "dist/js"+from.substring(15));
                     }
                 }]
+            },
+            require: {
+                options: {
+                    output_wrapper: "\"%output%require.config("+JSON.stringify(requireConfig).replace(/"/g, '\\"')+");\""
+                },
+                files:[{
+                    dest:"dist/js/require.js", src:["component/requirejs/require.js"],
+                    filter: function(from) {
+                        return isNewer(from, "dist/js/require.js");
+                    }
+                }]
             }
         },
         compass: {
@@ -197,17 +230,20 @@ module.exports = function(grunt) {
         }
     });
 
+    /* Third party */
+    grunt.registerTask('components', ['copy:components', 'closurecompiler:require']);
+
     /* Development */
     grunt.registerTask('dev.stylesheets', ['compass:main', 'copy:spritesheets', 'copy:css']);
     grunt.registerTask('dev.pages', ['copy:pages']);
     grunt.registerTask('dev.images', ['copy:images']);
-    grunt.registerTask('dev.modules', ['copy:modulesTmp', 'handlebars:persons', 'requirejs:app', 'copy:modules']);
+    grunt.registerTask('dev.modules', ['components', 'copy:modulesTmp', 'handlebars:persons', 'requirejs:app', 'copy:modules']);
 
     /* Production */
     grunt.registerTask('stylesheets', ['compass:main', 'imagemin:spritesheets', 'cssmin:all']);
     grunt.registerTask('pages', ['copy:pages']);
     grunt.registerTask('images', ['imagemin:images']);
-    grunt.registerTask('modules', ['copy:modulesTmp', 'handlebars:persons', 'requirejs:app', 'closurecompiler:modules']);
+    grunt.registerTask('modules', ['components', 'copy:modulesTmp', 'handlebars:persons', 'requirejs:app', 'closurecompiler:modules']);
 
     grunt.registerTask('production', ['pages', 'modules', 'stylesheets', 'images']);
     grunt.registerTask('default', ['dev.pages', 'dev.modules', 'dev.stylesheets', 'dev.images']);

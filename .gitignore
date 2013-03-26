@@ -29,5 +29,4 @@ generated/
 *.sublime-project
 *.sublime-workspace
 
-public/
-public.dev/
+dist/

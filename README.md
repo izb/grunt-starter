@@ -15,3 +15,20 @@ The ultimate starter skeleton for your new website. Out of the box, you get a bu
 - Minified JavaScript with Google's closure compiler
 - Source map support for easy stepping through of minified JS in the browser
 - Browser unit testing using phantomjs, mocha and chai
+
+To build
+--------
+
+```bash
+npm install -g grunt-cli
+npm install
+bower install
+```
+
+Then  one of:
+
+```bash
+grunt
+grunt production
+grunt watch
+```
