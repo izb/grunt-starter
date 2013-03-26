@@ -21,6 +21,7 @@ Thumbs.db
 
 # NPM packages folder.
 node_modules/
+component/
 
 # Folder for temporary files.
 tmp/

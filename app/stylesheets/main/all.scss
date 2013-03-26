@@ -1,0 +1,39 @@
+@import 'compass';
+@import '../imports/normalize.scss';
+@import '../imports/boilerplate.scss';
+
+$bg: #445667;
+
+body {
+    background-color:$bg;
+    color:white;
+}
+
+$col_bg: #78B;
+
+$icons-layout:smart;
+$icons-sprite-dimensions:true;
+@import 'icons/*.png';
+@include all-icons-sprites;
+
+$buttons-layout:smart;
+$buttons-sprite-dimensions:true;
+@import 'buttons/*.png';
+
+$fg: #056;
+
+.result {
+    @include border-radius(15px);
+    background-color: $col_bg;
+    color:$fg;
+}
+
+.littlebutton {
+  @include buttons-sprite(bullet);
+  cursor: pointer;
+  display: inline-block;
+  border:0;
+}
+
+@import '../imports/helpers.scss';
+@import '../imports/media.scss';
