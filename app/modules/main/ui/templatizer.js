@@ -1,4 +1,4 @@
-define(['jquery','templates/persons'], function($,tmpl) {
+define(['jquery','templates/persons'], function($,persons) {
 
     'use strict';
 
@@ -7,11 +7,11 @@ define(['jquery','templates/persons'], function($,tmpl) {
     }
 
     Templatizer.prototype.render = function(list) {
-        $('#container').html(tmpl['names'](list));
+        $('#container').html(persons['names'](list));
     };
 
     Templatizer.prototype.renderAges = function(list) {
-        $('#container').html(tmpl['ages'](list));
+        $(persons['ages'](list)).appendTo('#container');
     };
 
     return Templatizer;

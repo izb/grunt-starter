@@ -8,7 +8,7 @@ define(['jquery'], function($) {
     }
 
     ShowPic.prototype.show = function() {
-        $('<img src="images/scruffy.png" />').appendTo('#container');
+        $('<img src="images/showpic/scruffy.png" />').appendTo('#container');
     };
 
     return ShowPic;

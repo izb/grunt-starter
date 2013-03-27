@@ -19,6 +19,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-requirejs');
     grunt.loadNpmTasks('grunt-contrib-handlebars');
     grunt.loadNpmTasks('grunt-closurecompiler'); /* C-C-C-C-Combo breaker! */
+    grunt.loadNpmTasks('grunt-mocha');
 
     var requireConfig = {
         baseUrl: 'js/',
@@ -264,6 +265,18 @@ module.exports = function(grunt) {
                     }
                 }]
             }
+        },
+        mocha: {
+            options: {
+                mocha: {
+                    ignoreLeaks: false
+                },
+                reporter:'Spec',
+                run: false
+            },
+            all: {
+                src: ["app/test/**/*.html"]
+            }
         }
     });
 
@@ -283,4 +296,7 @@ module.exports = function(grunt) {
 
     grunt.registerTask('production', ['pages', 'modules', 'stylesheets', 'images']);
     grunt.registerTask('default', ['dev.pages', 'dev.modules', 'dev.stylesheets', 'dev.images']);
+    grunt.registerTask('dev', ['default']);
+
+    grunt.registerTask('test', ['mocha:all']);
 };

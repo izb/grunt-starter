@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <title>Mocha Test</title>
+    <link rel="stylesheet" href="../../node_modules/grunt-mocha/node_modules/mocha/mocha.css" type="text/css" charset="utf-8" />
+</head>
+<body>
+    <!-- Required for browser reporter -->
+    <div id="mocha"></div>
+
+    <!-- mocha -->
+    <script src="../../node_modules/grunt-mocha/node_modules/mocha/mocha.js" type="text/javascript" charset="utf-8"></script>
+    <script type="text/javascript" charset="utf-8">
+        // This will be overridden by mocha-helper if you run with grunt
+        mocha.setup('bdd');
+    </script>
+
+    <!--
+         IMPORTANT
+         If you do not want to set the `run` option to `true` for some reason
+         and are not using AMD, you must include the bridge.js file
+         in the `phantomjs` folder after you include `mocha.js`
+    -->
+    <script src="../../node_modules/grunt-mocha/phantomjs/bridge.js" type="text/javascript" charset="utf-8"></script>
+
+    <!-- Include your assertion lib of choice -->
+    <script src="../../node_modules/chai/chai.js" type="text/javascript" charset="utf-8"></script>
+    <script type="text/javascript" charset="utf-8">
+        // Setup chai
+        var expect = chai.expect;
+    </script>
+
+    <script src="../../component/requirejs/require.js"></script>
+
+    <!-- Spec files -->
+    <script src="spec/example.js" type="text/javascript" charset="utf-8"></script>
+
+    <script type="text/javascript">
+        require.config({
+            "baseUrl": "../../dist/js/",
+            "paths": {
+                "jquery": "../../component/jquery/jquery",
+                "lodash": "../../component/lodash/lodash",
+                "handlebars": "../../component/handlebars/handlebars.runtime"
+            },
+            "shim": {
+                "handlebars": {
+                    "exports": "Handlebars"
+                }
+            }
+        });
+
+        require(['test/example'], function() {
+            mocha
+                // .globals(['Wombat', 'Apple']) // acceptable globals
+                .run();
+        });
+    </script>
+
+    <hr />
+    <h3>Test output</h3>
+    <div id="container">
+    </div>
+
+</body>
+</html>
