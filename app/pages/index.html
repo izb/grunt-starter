@@ -36,6 +36,11 @@
 
 </footer>
 
-<script data-main="main/main" src="js/require.js"></script>
+<script src="js/require.js"></script>
+<script type="text/javascript">
+    require(['main/main'], function(main) {
+        main();
+    });
+</script>
 </body>
 </html>

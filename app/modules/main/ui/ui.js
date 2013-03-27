@@ -12,7 +12,7 @@ define(['jquery', 'lodash','main/ui/templatizer', 'datasource/main'], function($
         $('#showages').click(function() {_this.onShowAges();});
 
         $('#showpic').click(function() {
-            late_require(['showpic/main'], function(ShowPic) {
+            require(['showpic/main'], function(ShowPic) {
                 new ShowPic().show();
             });
         });

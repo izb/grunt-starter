@@ -100,7 +100,7 @@ module.exports = function(grunt) {
                 files: [{
                     expand:true,cwd:"tmp/images/", dest:"dist/images/", src:["**/*.png"],
                     filter: function(from) {
-                        return isNewer(from, "dist/images"+from.substring(16));
+                        return isNewer(from, "dist/images"+from.substring(10));
                     }
                 }]
             },
@@ -122,7 +122,6 @@ module.exports = function(grunt) {
         },
         handlebars: {
             options: {
-                namespace: "JST",
                 amd: true
             },
             persons:{
