@@ -4,18 +4,21 @@ module.exports = function(grunt) {
 
     'use strict';
 
+    /* TODO: Comment the darned heck out of this file */
+
     var fs = require('fs');
 
-    grunt.loadNpmTasks('grunt-contrib-requirejs');
     grunt.loadNpmTasks('grunt-contrib-copy');
-    grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-watch');
-    grunt.loadNpmTasks('grunt-contrib-handlebars');
     grunt.loadNpmTasks('grunt-contrib-clean');
-    grunt.loadNpmTasks('grunt-closurecompiler');
+    grunt.loadNpmTasks('grunt-contrib-jshint');
+    grunt.loadNpmTasks('grunt-contrib-cssmin');
+    grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-compass');
     grunt.loadNpmTasks('grunt-contrib-imagemin');
-    grunt.loadNpmTasks('grunt-contrib-cssmin');
+    grunt.loadNpmTasks('grunt-contrib-requirejs');
+    grunt.loadNpmTasks('grunt-contrib-handlebars');
+    grunt.loadNpmTasks('grunt-closurecompiler'); /* C-C-C-C-Combo breaker! */
 
     var requireConfig = {
         baseUrl: 'js/',
@@ -208,18 +211,15 @@ module.exports = function(grunt) {
                         return isNewer(from, "dist/js/require.js");
                     }
                 }]
-            },
+            }
+        },
+        concat: {
             requireDev: {
-                /* TODO: Use non-min require in dev build */
                 options: {
-                    output_wrapper: "\"%output%require.config("+JSON.stringify(requireConfigDev).replace(/"/g, '\\"')+");\""
+                    footer: "require.config("+JSON.stringify(requireConfigDev, null, 4)+");"
                 },
-                files:[{
-                    dest:"dist/js/require.js", src:["component/requirejs/require.js"],
-                    filter: function(from) {
-                        return isNewer(from, "dist/js/require.js");
-                    }
-                }]
+                src:["component/requirejs/require.js"],
+                dest:"dist/js/require.js",
             }
         },
         compass: {
@@ -268,7 +268,7 @@ module.exports = function(grunt) {
     });
 
     /* Development */
-    grunt.registerTask('components', ['copy:components', 'closurecompiler:requireDev']);
+    grunt.registerTask('components', ['copy:components', 'concat:requireDev']);
     grunt.registerTask('dev.stylesheets', ['compass:main', 'copy:spritesheets', 'copy:css']);
     grunt.registerTask('dev.pages', ['copy:pages']);
     grunt.registerTask('dev.images', ['copy:images']);
