@@ -32,6 +32,20 @@ module.exports = function(grunt) {
         }
     };
 
+    var requireConfigDev = {
+        baseUrl: 'js/',
+        paths: {
+            jquery: 'jquery',
+            lodash: 'lodash',
+            handlebars: 'handlebars.runtime'
+        },
+        shim: {
+            handlebars: {
+                exports: 'Handlebars'
+            }
+        }
+    };
+
     var isNewer = function(src,dest) {
         if (!fs.existsSync(dest)) {
             return true;
@@ -76,7 +90,7 @@ module.exports = function(grunt) {
                 files: [{
                     expand:true, cwd:"tmp/modules.amd/", dest:"dist/js/", src:["**/*.js"],
                     filter: function(from) {
-                        return isNewer("tmp/modules"+from.substring(15), "dist/js"+from.substring(15));
+                        return isNewer(from, "dist/js"+from.substring(15));
                     }
                 }]
             },
@@ -112,17 +126,29 @@ module.exports = function(grunt) {
                     }
                 }]
             },
-            components: {
+            componentsmin: {
                 files: [
                     {dest:"dist/js/jquery.min.js", src:"component/jquery/jquery.min.js"},
                     {dest:"dist/js/handlebars.runtime.js", src:"component/handlebars/handlebars.runtime.js"},
                     {dest:"dist/js/lodash.min.js", src:"component/lodash/dist/lodash.min.js"}
                 ]
+            },
+            components: {
+                files: [
+                    {dest:"dist/js/jquery.js", src:"component/jquery/jquery.js"},
+                    {dest:"dist/js/handlebars.runtime.js", src:"component/handlebars/handlebars.runtime.js"},
+                    {dest:"dist/js/lodash.js", src:"component/lodash/dist/lodash.js"}
+                ]
             }
         },
         handlebars: {
             options: {
-                amd: true
+                amd: true,
+                namespace: 'hbs',
+                processName: function(name) {
+                    var pieces = name.split("/");
+                    return pieces[pieces.length - 1].replace('.hbs', '');
+                }
             },
             persons:{
                 files:manyToOne("tmp/modules/templates/persons.js",["app/templates/persons/*.hbs"])
@@ -182,6 +208,18 @@ module.exports = function(grunt) {
                         return isNewer(from, "dist/js/require.js");
                     }
                 }]
+            },
+            requireDev: {
+                /* TODO: Use non-min require in dev build */
+                options: {
+                    output_wrapper: "\"%output%require.config("+JSON.stringify(requireConfigDev).replace(/"/g, '\\"')+");\""
+                },
+                files:[{
+                    dest:"dist/js/require.js", src:["component/requirejs/require.js"],
+                    filter: function(from) {
+                        return isNewer(from, "dist/js/require.js");
+                    }
+                }]
             }
         },
         compass: {
@@ -229,16 +267,15 @@ module.exports = function(grunt) {
         }
     });
 
-    /* Third party */
-    grunt.registerTask('components', ['copy:components', 'closurecompiler:require']);
-
     /* Development */
+    grunt.registerTask('components', ['copy:components', 'closurecompiler:requireDev']);
     grunt.registerTask('dev.stylesheets', ['compass:main', 'copy:spritesheets', 'copy:css']);
     grunt.registerTask('dev.pages', ['copy:pages']);
     grunt.registerTask('dev.images', ['copy:images']);
     grunt.registerTask('dev.modules', ['components', 'copy:modulesTmp', 'handlebars:persons', 'requirejs:app', 'copy:modules']);
 
     /* Production */
+    grunt.registerTask('componentsmin', ['copy:componentsmin', 'closurecompiler:require']);
     grunt.registerTask('stylesheets', ['compass:main', 'imagemin:spritesheets', 'cssmin:all']);
     grunt.registerTask('pages', ['copy:pages']);
     grunt.registerTask('images', ['imagemin:images']);

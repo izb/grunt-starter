@@ -1,4 +1,4 @@
-define(['jquery','handlebars','templates/persons'], function($,Handlebars) {
+define(['jquery','templates/persons'], function($,tmpl) {
 
     'use strict';
 
@@ -7,11 +7,11 @@ define(['jquery','handlebars','templates/persons'], function($,Handlebars) {
     }
 
     Templatizer.prototype.render = function(list) {
-        $('#container').html(Handlebars.templates.names(list));
+        $('#container').html(tmpl['names'](list));
     };
 
     Templatizer.prototype.renderAges = function(list) {
-        $(Handlebars.templates.ages(list)).appendTo('#container');
+        $('#container').html(tmpl['ages'](list));
     };
 
     return Templatizer;
