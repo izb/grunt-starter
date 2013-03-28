@@ -3,7 +3,7 @@
     },
 
     "browser" : true,
-    "curly: true,
+    "curly": true,
     "eqeqeq": true,
     "immed": true,
     "latedef": true,
@@ -12,6 +12,7 @@
     "sub": true,
     "undef": true,
     "boss": true,
-    "eqnull": true
+    "eqnull": true,
+    "scripturl": true
 
 }

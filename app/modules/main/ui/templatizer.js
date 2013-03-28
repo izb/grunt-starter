@@ -1,3 +1,4 @@
+/*global define*/
 define(['jquery','templates/persons'], function($,persons) {
 
     'use strict';

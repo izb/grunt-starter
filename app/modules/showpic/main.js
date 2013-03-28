@@ -1,3 +1,4 @@
+/*global define*/
 /* A simple on-demand module that puts a picture onto the page. */
 
 define(['jquery'], function($) {

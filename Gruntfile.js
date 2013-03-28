@@ -50,6 +50,8 @@ module.exports = function(grunt) {
         }
     };
 
+    /** Returns true if the source is newer than the destination.
+     */
     var isNewer = function(src,dest) {
         if (!fs.existsSync(dest)) {
             return true;
@@ -59,6 +61,9 @@ module.exports = function(grunt) {
         return(fromstat.mtime>tostat.mtime);
     };
 
+    /** Where there are many files that compile to one, this returns true
+     * if any of the input files are newer than the output.
+     */
     var manyToOne = function(dest, src) {
         var compile = true;
         if (fs.existsSync(dest)) {
@@ -78,6 +83,9 @@ module.exports = function(grunt) {
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
         jshint: {
+            options: {
+                jshintrc: ".jshintrc"
+            },
             build:  ['Gruntfile.js', 'app/modules/**/*.js']
         },
         clean: ["tmp", ".sass-cache", "dist"],
@@ -161,6 +169,7 @@ module.exports = function(grunt) {
         requirejs: {
             options: {
                 mainConfigFile: "r.config.js",
+                logLevel: 4,
                 paths: {
                     jquery: "empty:../../component/jquery/jquery.min",
                     lodash: "empty:../../component/lodash/dist/lodash.min",
@@ -176,13 +185,13 @@ module.exports = function(grunt) {
                 options: {
                     modules: [
                         {
-                            name: "main/main",
+                            name: "main/main"
                         },
                         {
-                            name: "datasource/main",
+                            name: "datasource/main"
                         },
                         {
-                            name: "showpic/main",
+                            name: "showpic/main"
                         }
                     ]
                 }
@@ -220,7 +229,7 @@ module.exports = function(grunt) {
                     footer: "require.config("+JSON.stringify(requireConfigDev, null, 4)+");"
                 },
                 src:["component/requirejs/require.js"],
-                dest:"dist/js/require.js",
+                dest:"dist/js/require.js"
             }
         },
         compass: {
@@ -294,8 +303,8 @@ module.exports = function(grunt) {
     grunt.registerTask('images', ['imagemin:images']);
     grunt.registerTask('modules', ['components', 'copy:modulesTmp', 'handlebars:persons', 'requirejs:app', 'closurecompiler:modules']);
 
-    grunt.registerTask('production', ['pages', 'modules', 'stylesheets', 'images']);
-    grunt.registerTask('default', ['dev.pages', 'dev.modules', 'dev.stylesheets', 'dev.images']);
+    grunt.registerTask('production', ['jshint:build', 'pages', 'modules', 'stylesheets', 'images']);
+    grunt.registerTask('default', ['jshint:build', 'dev.pages', 'dev.modules', 'dev.stylesheets', 'dev.images']);
     grunt.registerTask('dev', ['default']);
 
     grunt.registerTask('test', ['mocha:all']);
