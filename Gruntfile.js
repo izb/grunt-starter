@@ -292,6 +292,36 @@ module.exports = function(grunt) {
             all: {
                 src: ["app/test/**/*.html"]
             }
+        },
+        watch: {
+            images: {
+                files: ['app/images/**/*.png','app/images/**/*.jpeg','app/images/**/*.jpg'],
+                tasks: ['dev.images']
+            },
+            modules: {
+                files: ['app/modules/**/*.js'],
+                tasks: ['dev.modules']
+            },
+            pages: {
+                files: ['app/pages/**/*.htm','app/pages/**/*.php','app/pages/**/*.html'],
+                tasks: ['dev.pages']
+            },
+            sprites: {
+                files: ['app/sprites/**/*.png'],
+                tasks: ['dev.stylesheets']
+            },
+            stylesheets: {
+                files: ['app/stylesheets/**/*.scss','app/stylesheets/**/*.css'],
+                tasks: ['dev.stylesheets']
+            },
+            templates: {
+                files: ['app/templates/**/*.hbs'],
+                tasks: ['dev.modules']
+            },
+            test: {
+                files: ['app/test/**/*.htm','app/test/**/*.php','app/test/**/*.html','app/test/**/*.js'],
+                tasks: ['test']
+            }
         }
     });
 
