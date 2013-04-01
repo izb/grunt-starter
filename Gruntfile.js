@@ -339,7 +339,7 @@ module.exports = function(grunt) {
     grunt.registerTask('images', ['imagemin:images']);
     grunt.registerTask('modules', ['components', 'copy:modulesTmp', 'handlebars:persons', 'requirejs:app', 'closurecompiler:modules']);
 
-    grunt.registerTask('production', ['jshint:production', 'pages', 'modules', 'stylesheets', 'images']);
+    grunt.registerTask('production', ['clean', 'jshint:production', 'pages', 'modules', 'stylesheets', 'images']);
     grunt.registerTask('default', ['jshint:dev', 'dev.pages', 'dev.modules', 'dev.stylesheets', 'dev.images']);
     grunt.registerTask('dev', ['default']);
 

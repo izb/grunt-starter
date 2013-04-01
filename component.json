@@ -1,6 +1,6 @@
 {
   "name": "Grunt starter",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "dependencies": {
     "requirejs": "2.1.5",
     "jquery": "1.9.1",
