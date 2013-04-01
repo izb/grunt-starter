@@ -86,7 +86,13 @@ module.exports = function(grunt) {
             options: {
                 jshintrc: ".jshintrc"
             },
-            build:  ['Gruntfile.js', 'app/modules/**/*.js']
+            production:  ['Gruntfile.js', 'app/modules/**/*.js'],
+            dev: {
+                options: {
+                    devel:true
+                },
+                src:  ['Gruntfile.js', 'app/modules/**/*.js']
+            }
         },
         clean: ["tmp", ".sass-cache", "dist"],
         copy: {
@@ -169,7 +175,7 @@ module.exports = function(grunt) {
         requirejs: {
             options: {
                 mainConfigFile: "r.config.js",
-                logLevel: 4,
+                logLevel: 3,
                 paths: {
                     jquery: "empty:../../component/jquery/jquery.min",
                     lodash: "empty:../../component/lodash/dist/lodash.min",
@@ -303,8 +309,8 @@ module.exports = function(grunt) {
     grunt.registerTask('images', ['imagemin:images']);
     grunt.registerTask('modules', ['components', 'copy:modulesTmp', 'handlebars:persons', 'requirejs:app', 'closurecompiler:modules']);
 
-    grunt.registerTask('production', ['jshint:build', 'pages', 'modules', 'stylesheets', 'images']);
-    grunt.registerTask('default', ['jshint:build', 'dev.pages', 'dev.modules', 'dev.stylesheets', 'dev.images']);
+    grunt.registerTask('production', ['jshint:production', 'pages', 'modules', 'stylesheets', 'images']);
+    grunt.registerTask('default', ['jshint:dev', 'dev.pages', 'dev.modules', 'dev.stylesheets', 'dev.images']);
     grunt.registerTask('dev', ['default']);
 
     grunt.registerTask('test', ['mocha:all']);
