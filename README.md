@@ -1,6 +1,8 @@
 Grunt Starter
 =============
 
+[![NPM version](https://badge.fury.io/js/grunt-starter.png)](http://badge.fury.io/js/grunt-starter)
+
 The ultimate starter skeleton for your new website. Out of the box, you get a build script that generates a compact website. Check out this list of awesome features:
 
 - Stylesheets using SCSS, built with Compass
