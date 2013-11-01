@@ -25,9 +25,8 @@ module.exports = function(grunt) {
         baseUrl: 'js/',
         paths: {
             jquery: ['http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min', 'jquery.min'],
-            lodash: ['http://cdnjs.cloudflare.com/ajax/libs/lodash.js/1.0.0-rc.3/lodash.min', 'lodash.min'],
-            /* TODO: Handlebars isn't minified in the fallback */
-            handlebars: ['http://cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.0-rc.3/handlebars.runtime.min', 'handlebars.runtime']
+            lodash: ['http://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.2.1/lodash.min', 'lodash.min'],
+            handlebars: ['http://cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.0/handlebars.min', 'handlebars.runtime']
         },
         shim: {
             handlebars: {
@@ -147,7 +146,7 @@ module.exports = function(grunt) {
             componentsmin: {
                 files: [
                     {dest:"dist/js/jquery.min.js", src:"component/jquery/jquery.min.js"},
-                    {dest:"dist/js/handlebars.runtime.js", src:"component/handlebars/handlebars.runtime.js"},
+                    /* handlebars isn't minified on bower, so you'll find that one in the closure compiler section. Bah. */
                     {dest:"dist/js/lodash.min.js", src:"component/lodash/dist/lodash.min.js"}
                 ]
             },
@@ -211,7 +210,9 @@ module.exports = function(grunt) {
             },
             modules: {
                 files:[{
-                    expand:true, cwd:"tmp/modules.amd/", dest:"dist/js/", src:["**/*.js"],
+                    expand:true, cwd:"tmp/modules.amd/",
+                    dest:"dist/js/",
+                    src:["**/*.js"],
                     filter: function(from) {
                         return isNewer("tmp/modules"+from.substring(15), "dist/js"+from.substring(15));
                     }
@@ -222,10 +223,16 @@ module.exports = function(grunt) {
                     output_wrapper: "\"%output%require.config("+JSON.stringify(requireConfig).replace(/"/g, '\\"')+");\""
                 },
                 files:[{
-                    dest:"dist/js/require.js", src:["component/requirejs/require.js"],
+                    dest:"dist/js/require.js",
+                    src:["component/requirejs/require.js"],
                     filter: function(from) {
                         return isNewer(from, "dist/js/require.js");
                     }
+                }]
+            },
+            handlebars: {
+                files:[{
+                    dest:"dist/js/handlebars.runtime.js", src:["component/handlebars/handlebars.runtime.js"]
                 }]
             }
         },
@@ -333,7 +340,7 @@ module.exports = function(grunt) {
     grunt.registerTask('dev.modules', ['components', 'copy:modulesTmp', 'handlebars:persons', 'requirejs:app', 'copy:modules']);
 
     /* Production */
-    grunt.registerTask('componentsmin', ['copy:componentsmin', 'closurecompiler:require']);
+    grunt.registerTask('componentsmin', ['copy:componentsmin', 'closurecompiler:handlebars', 'closurecompiler:require']);
     grunt.registerTask('stylesheets', ['compass:main', 'imagemin:spritesheets', 'cssmin:all']);
     grunt.registerTask('pages', ['copy:pages']);
     grunt.registerTask('images', ['imagemin:images']);
