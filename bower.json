@@ -1,0 +1,10 @@
+{
+  "name": "Grunt starter",
+  "version": "0.14.0",
+  "dependencies": {
+    "requirejs": "2.1.9",
+    "jquery": "1.9.1",
+    "lodash": "2.2.1",
+    "handlebars": "1.0.0"
+  }
+}
