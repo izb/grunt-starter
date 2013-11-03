@@ -21,6 +21,8 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-closurecompiler'); /* C-C-C-C-Combo breaker! */
     grunt.loadNpmTasks('grunt-mocha');
 
+    grunt.loadTasks('tasks');
+
     var requireConfig = {
         baseUrl: 'js/',
         paths: {
@@ -94,6 +96,12 @@ module.exports = function(grunt) {
             }
         },
         clean: ["tmp", ".sass-cache", "dist"],
+        checkExists: {
+            prerequisites: {
+                paths: ["component"],
+                err: "Please run 'bower install'"
+            }
+        },
         copy: {
             modulesTmp: {
                 files: [{
@@ -346,8 +354,8 @@ module.exports = function(grunt) {
     grunt.registerTask('images', ['imagemin:images']);
     grunt.registerTask('modules', ['componentsmin', 'copy:modulesTmp', 'handlebars:persons', 'requirejs:app', 'closurecompiler:modules']);
 
-    grunt.registerTask('production', ['clean', 'jshint:production', 'pages', 'modules', 'stylesheets', 'images']);
-    grunt.registerTask('default', ['jshint:dev', 'dev.pages', 'dev.modules', 'dev.stylesheets', 'dev.images']);
+    grunt.registerTask('production', ['checkExists:prerequisites', 'clean', 'jshint:production', 'pages', 'modules', 'stylesheets', 'images']);
+    grunt.registerTask('default', ['checkExists:prerequisites', 'jshint:dev', 'dev.pages', 'dev.modules', 'dev.stylesheets', 'dev.images']);
     grunt.registerTask('dev', ['default']);
 
     grunt.registerTask('test', ['mocha:all']);

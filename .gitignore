@@ -30,3 +30,5 @@ generated/
 *.sublime-workspace
 
 dist/
+
+/*.bak
