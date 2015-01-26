@@ -26,14 +26,9 @@ module.exports = function(grunt) {
     var requireConfig = {
         baseUrl: 'js/',
         paths: {
-            jquery: ['http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min', 'jquery.min'],
-            lodash: ['http://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.2.1/lodash.min', 'lodash.min'],
-            handlebars: ['http://cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.0/handlebars.min', 'handlebars.runtime']
-        },
-        shim: {
-            handlebars: {
-                exports: 'Handlebars'
-            }
+            jquery: ['https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min', 'jquery.min'],
+            lodash: ['https://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.min', 'lodash.min'],
+            'handlebars.runtime': ['https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0/handlebars.runtime.min', 'handlebars.runtime']
         }
     };
 
@@ -42,12 +37,7 @@ module.exports = function(grunt) {
         paths: {
             jquery: 'jquery',
             lodash: 'lodash',
-            handlebars: 'handlebars.runtime'
-        },
-        shim: {
-            handlebars: {
-                exports: 'Handlebars'
-            }
+            'handlebars.runtime': 'handlebars.runtime'
         }
     };
 
@@ -84,13 +74,45 @@ module.exports = function(grunt) {
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
         jshint: {
-            options: {
-                jshintrc: ".jshintrc"
+            production: {
+                options: {
+                    browser:true,
+                    globals: {
+                        define:true,
+                        require:true
+                    },
+                    curly: true,
+                    eqeqeq: true,
+                    immed: true,
+                    latedef: true,
+                    newcap: true,
+                    noarg: true,
+                    sub: true,
+                    undef: true,
+                    boss: true,
+                    eqnull: true,
+                    scripturl: true
+                },
+                src:  ['Gruntfile.js', 'app/modules/**/*.js']
             },
-            production:  ['Gruntfile.js', 'app/modules/**/*.js'],
             dev: {
                 options: {
-                    devel:true
+                    devel:true,
+                    globals: {
+                        define:true,
+                        require:true
+                    },
+                    curly: true,
+                    eqeqeq: true,
+                    immed: true,
+                    latedef: true,
+                    newcap: true,
+                    noarg: true,
+                    sub: true,
+                    undef: true,
+                    boss: true,
+                    eqnull: true,
+                    scripturl: true
                 },
                 src:  ['Gruntfile.js', 'app/modules/**/*.js']
             }
@@ -104,63 +126,75 @@ module.exports = function(grunt) {
         },
         copy: {
             modulesTmp: {
+                cwd:"app/modules/",
                 files: [{
-                    expand:true,cwd:"app/modules/", dest:"tmp/modules/", src:["**/*.js"],
+                    expand:true, cwd:"<%= copy.modulesTmp.cwd %>", dest:"tmp/modules/", src:["**/*.js"],
                     filter: function(from) {
-                        return isNewer(from, "tmp"+from.substring(3));
+                        var cwdLen = grunt.config.process("<%= copy.modulesTmp.cwd %>").length;
+                        return isNewer(from, "tmp"+from.substring(cwdLen - 1));
                     }
                 }]
             },
             modules: {
+                cwd:"tmp/modules.amd/",
                 files: [{
-                    expand:true, cwd:"tmp/modules.amd/", dest:"dist/js/", src:["**/*.js"],
+                    expand:true, cwd:"<%= copy.modules.cwd %>", dest:"dist/js/", src:["**/*.js"],
                     filter: function(from) {
-                        return isNewer(from, "dist/js"+from.substring(15));
+                        var cwdLen = grunt.config.process("<%= copy.modules.cwd %>").length;
+                        return isNewer(from, "dist/js"+from.substring(cwdLen - 1));
                     }
                 }]
             },
             pages: {
+                cwd:"app/pages/",
                 files: [{
-                    expand:true,cwd:"app/pages/", dest:"dist/", src:["**/*.htm", "**/*.html", "**/*.php"],
+                    expand:true, cwd:"<%= copy.pages.cwd %>", dest:"dist/", src:["**/*.htm", "**/*.html", "**/*.php"],
                     filter: function(from) {
-                        return isNewer(from, "dist"+from.substring(9));
+                        var cwdLen = grunt.config.process("<%= copy.pages.cwd %>").length;
+                        return isNewer(from, "dist"+from.substring(cwdLen - 1));
                     }
                 }]
             },
             images: {
+                cwd:"app/images/",
                 files: [{
-                    expand:true,cwd:"app/images/", dest:"dist/images/", src:["**/*.jpg", "**/*.jpeg", "**/*.png"],
+                    expand:true, cwd:"<%= copy.images.cwd %>", dest:"dist/images/", src:["**/*.jpg", "**/*.jpeg", "**/*.png"],
                     filter: function(from) {
-                        return isNewer(from, "dist/images"+from.substring(10));
+                        var cwdLen = grunt.config.process("<%= copy.images.cwd %>").length;
+                        return isNewer(from, "dist/images"+from.substring(cwdLen - 1));
                     }
                 }]
             },
             spritesheets: {
+                cwd:"tmp/images/",
                 files: [{
-                    expand:true,cwd:"tmp/images/", dest:"dist/images/", src:["**/*.png"],
+                    expand:true, cwd:"<%= copy.spritesheets.cwd %>", dest:"dist/images/", src:["**/*.png"],
                     filter: function(from) {
-                        return isNewer(from, "dist/images"+from.substring(10));
+                        var cwdLen = grunt.config.process("<%= copy.spritesheets.cwd %>").length;
+                        return isNewer(from, "dist/images"+from.substring(cwdLen - 1));
                     }
                 }]
             },
             css: {
+                cwd:"tmp/css/",
                 files: [{
-                    expand:true, cwd:"tmp/css/", dest:"dist/css/", src:["**/*.css"],
+                    expand:true, cwd:"<%= copy.css.cwd %>", dest:"dist/css/", src:["**/*.css"],
                     filter: function(from) {
-                        return isNewer(from, "dist/css"+from.substring(7));
+                        var cwdLen = grunt.config.process("<%= copy.css.cwd %>").length;
+                        return isNewer(from, "dist/css"+from.substring(cwdLen - 1));
                     }
                 }]
             },
             componentsmin: {
                 files: [
-                    {dest:"dist/js/jquery.min.js", src:"component/jquery/jquery.min.js"},
+                    {dest:"dist/js/jquery.min.js", src:"component/jquery/dist/jquery.min.js"},
                     /* handlebars isn't minified on bower, so you'll find that one in the closure compiler section. Bah. */
                     {dest:"dist/js/lodash.min.js", src:"component/lodash/dist/lodash.min.js"}
                 ]
             },
             components: {
                 files: [
-                    {dest:"dist/js/jquery.js", src:"component/jquery/jquery.js"},
+                    {dest:"dist/js/jquery.js", src:"component/jquery/dist/jquery.js"},
                     {dest:"dist/js/handlebars.runtime.js", src:"component/handlebars/handlebars.runtime.js"},
                     {dest:"dist/js/lodash.js", src:"component/lodash/dist/lodash.js"}
                 ]
@@ -168,7 +202,7 @@ module.exports = function(grunt) {
         },
         handlebars: {
             options: {
-                amd: true,
+                amd: ['handlebars.runtime'],
                 namespace: 'hbs',
                 processName: function(name) {
                     var pieces = name.split("/");
@@ -176,7 +210,7 @@ module.exports = function(grunt) {
                 }
             },
             persons:{
-                files:manyToOne("tmp/modules/templates/persons.js",["app/templates/persons/*.hbs"])
+                files:manyToOne("tmp/modules/templates/persons.js", ["app/templates/persons/*.hbs"])
             }
         },
         requirejs: {
@@ -184,14 +218,9 @@ module.exports = function(grunt) {
                 mainConfigFile: "r.config.js",
                 logLevel: 3,
                 paths: {
-                    jquery: "empty:../../component/jquery/jquery.min",
+                    jquery: "empty:../../component/jquery/dist/jquery.min",
                     lodash: "empty:../../component/lodash/dist/lodash.min",
-                    handlebars: "empty:../../component/handlebars/handlebars.runtime"
-                },
-                shim: {
-                    handlebars: {
-                        exports: 'Handlebars'
-                    }
+                    'handlebars.runtime': "empty:../../component/handlebars/handlebars.runtime.min"
                 }
             },
             app: {
@@ -228,7 +257,7 @@ module.exports = function(grunt) {
             },
             require: {
                 options: {
-                    output_wrapper: "\"%output%require.config("+JSON.stringify(requireConfig).replace(/"/g, '\\"')+");\""
+                    output_wrapper: "%output%require.config("+JSON.stringify(requireConfig)+");"
                 },
                 files:[{
                     dest:"dist/js/require.js",

@@ -1,5 +1,7 @@
 {
     "globals": {
+        "define":true,
+        "require":true
     },
 
     "browser" : true,

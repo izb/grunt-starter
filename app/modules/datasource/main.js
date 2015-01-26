@@ -1,4 +1,3 @@
-/*global define*/
 /* A simple example module that 'generates' data. */
 
 define(function() {

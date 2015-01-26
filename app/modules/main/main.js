@@ -1,4 +1,3 @@
-/*global define*/
 define(["main/ui/ui"], function(UI) {
 
     'use strict';
